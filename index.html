@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="WorkTracker - Aplicación personal de control horario"
+    >
+
+    <meta name="theme-color" content="#6c5ce7">
+
+    <title>WorkTracker</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="app" class="app">
+
+        <!-- =========================
+             SIDEBAR
+        ========================== -->
+
+        <aside id="sidebar" class="sidebar">
+
+            <div class="sidebar-header">
+
+                <div class="brand">
+
+                    <div class="brand-icon">
+                        WT
+                    </div>
+
+                    <div class="brand-text">
+                        <strong>WorkTracker</strong>
+
+                        <small data-i18n="appSubtitle">
+                            Control horario
+                        </small>
+                    </div>
+
+                </div>
+
+                <button
+                    id="closeSidebarBtn"
+                    class="icon-button sidebar-close"
+                    type="button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="sidebar-user">
+
+                <div
+                    id="sidebarAvatar"
+                    class="sidebar-avatar"
+                >
+                    U
+                </div>
+
+                <div class="sidebar-user-info">
+
+                    <strong id="sidebarUsername">
+                        Usuario
+                    </strong>
+
+                    <span data-i18n="personalAccount">
+                        Cuenta personal
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <nav class="main-navigation">
+
+                <button
+                    class="nav-item active"
+                    data-section="dashboard"
+                    type="button"
+                >
+                    <span class="nav-icon">⌂</span>
+
+                    <span data-i18n="dashboard">
+                        Inicio
+                    </span>
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    data-section="history"
+                    type="button"
+                >
+                    <span class="nav-icon">▤</span>
+
+                    <span data-i18n="history">
+                        Historial
+                    </span>
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    data-section="statistics"
+                    type="button"
+                >
+                    <span class="nav-icon">◫</span>
+
+                    <span data-i18n="statistics">
+                        Estadísticas
+                    </span>
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    data-section="settings"
+                    type="button"
+                >
+                    <span class="nav-icon">⚙</span>
+
+                    <span data-i18n="settings">
+                        Configuración
+                    </span>
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <div class="storage-status">
+
+                    <span class="status-dot"></span>
+
+                    <span data-i18n="storedLocally">
+                        Datos almacenados localmente
+                    </span>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             MAIN
+        ========================== -->
+
+        <main class="main-content">
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <button
+                    id="openSidebarBtn"
+                    class="icon-button mobile-menu-button"
+                    type="button"
+                >
+                    ☰
+                </button>
+
+
+                <div class="topbar-date">
+
+                    <span id="currentDate"></span>
+
+                    <span class="separator">•</span>
+
+                    <span id="currentTime"></span>
+
+                </div>
+
+
+                <div class="topbar-actions">
+
+                    <button
+                        id="themeToggleBtn"
+                        class="icon-button"
+                        type="button"
+                    >
+                        ☾
+                    </button>
+
+
+                    <button
+                        id="languageToggleBtn"
+                        class="language-button"
+                        type="button"
+                    >
+                        ES
+                    </button>
+
+
+                    <button
+                        id="topbarAvatar"
+                        class="topbar-avatar"
+                        type="button"
+                    >
+                        U
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <div class="page-container">
+
+
+                <!-- =========================
+                     DASHBOARD
+                ========================== -->
+
+                <section
+                    id="dashboardSection"
+                    class="page-section active"
+                    data-section-content="dashboard"
+                >
+
+                    <div class="welcome-area">
+
+                        <div>
+
+                            <span
+                                class="eyebrow"
+                                data-i18n="welcome"
+                            >
+                                Bienvenido
+                            </span>
+
+
+                            <h1>
+                                <span id="dynamicGreeting">
+                                    Buenos días
+                                </span>,
+                                <span id="welcomeUsername">
+                                    Usuario
+                                </span>
+                            </h1>
+
+
+                            <p data-i18n="welcomeDescription">
+                                Aquí puedes controlar y consultar tus horas trabajadas.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div
+                        id="workStatusCard"
+                        class="work-status-card"
+                    >
+
+                        <div class="work-status-header">
+
+                            <div>
+
+                                <span
+                                    class="section-label"
+                                    data-i18n="currentStatus"
+                                >
+                                    Estado actual
+                                </span>
+
+                                <h2 id="workStatusTitle">
+                                    No estás trabajando
+                                </h2>
+
+                            </div>
+
+
+                            <div
+                                id="workStatusIndicator"
+                                class="work-status-indicator inactive"
+                            >
+
+                                <span></span>
+
+                                <span id="workStatusText">
+                                    No trabajando
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="live-counter">
+
+                            <span
+                                class="counter-label"
+                                data-i18n="timeWorkedCurrentSession"
+                            >
+                                Tiempo de la sesión actual
+                            </span>
+
+
+                            <div
+                                id="liveCounter"
+                                class="counter-value"
+                            >
+                                00:00:00
+                            </div>
+
+
+                            <div
+                                id="currentEntryInfo"
+                                class="current-entry-info"
+                            >
+                                No has iniciado ninguna sesión.
+                            </div>
+
+                        </div>
+
+
+                        <div class="clock-actions">
+
+                            <button
+                                id="clockInBtn"
+                                class="clock-button clock-in-button"
+                                type="button"
+                            >
+                                ▶
+                                <span data-i18n="clockIn">
+                                    Entrada
+                                </span>
+                            </button>
+
+
+                            <button
+                                id="clockOutBtn"
+                                class="clock-button clock-out-button"
+                                type="button"
+                                disabled
+                            >
+                                ■
+                                <span data-i18n="clockOut">
+                                    Salida
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SUMMARY -->
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="summary"
+                            >
+                                Resumen
+                            </span>
+
+                            <h2 data-i18n="yourActivity">
+                                Tu actividad
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stats-grid dashboard-stats">
+
+                        <article class="stat-card">
+
+                            <div class="stat-card-icon today-icon">
+                                ◷
+                            </div>
+
+                            <div class="stat-card-content">
+
+                                <span data-i18n="today">
+                                    Hoy
+                                </span>
+
+                                <strong id="todayHours">
+                                    0h 00m
+                                </strong>
+
+                            </div>
+
+                        </article>
+
+
+                        <article class="stat-card">
+
+                            <div class="stat-card-icon week-icon">
+                                ◫
+                            </div>
+
+                            <div class="stat-card-content">
+
+                                <span data-i18n="thisWeek">
+                                    Esta semana
+                                </span>
+
+                                <strong id="weekHours">
+                                    0h 00m
+                                </strong>
+
+                            </div>
+
+                        </article>
+
+
+                        <article class="stat-card">
+
+                            <div class="stat-card-icon month-icon">
+                                ▣
+                            </div>
+
+                            <div class="stat-card-content">
+
+                                <span data-i18n="thisMonth">
+                                    Este mes
+                                </span>
+
+                                <strong id="monthHours">
+                                    0h 00m
+                                </strong>
+
+                            </div>
+
+                        </article>
+
+
+                        <article class="stat-card">
+
+                            <div class="stat-card-icon total-icon">
+                                ∑
+                            </div>
+
+                            <div class="stat-card-content">
+
+                                <span data-i18n="total">
+                                    Total
+                                </span>
+
+                                <strong id="totalHours">
+                                    0h 00m
+                                </strong>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+
+                    <!-- QUICK ACTIONS -->
+
+                    <div class="section-heading quick-heading">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="actions"
+                            >
+                                Acciones
+                            </span>
+
+                            <h2 data-i18n="manageTime">
+                                Gestionar tiempo
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-actions-grid">
+
+                        <button
+                            id="openAddEntryBtn"
+                            class="quick-action-card"
+                            type="button"
+                        >
+
+                            <span class="quick-action-icon">
+                                +
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong data-i18n="addEntry">
+                                    Añadir fichaje
+                                </strong>
+
+                                <small data-i18n="addEntryDescription">
+                                    Añade manualmente horas a un día
+                                </small>
+
+                            </span>
+
+                            <span class="quick-action-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            id="openEditEntryBtn"
+                            class="quick-action-card"
+                            type="button"
+                        >
+
+                            <span class="quick-action-icon edit">
+                                ✎
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong data-i18n="editEntries">
+                                    Modificar fichajes
+                                </strong>
+
+                                <small data-i18n="editEntriesDescription">
+                                    Modifica tus fichajes registrados
+                                </small>
+
+                            </span>
+
+                            <span class="quick-action-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            id="openAdjustTimeBtn"
+                            class="quick-action-card"
+                            type="button"
+                        >
+
+                            <span class="quick-action-icon adjust">
+                                ±
+                            </span>
+
+                            <span class="quick-action-content">
+
+                                <strong data-i18n="adjustTime">
+                                    Ajustar tiempo
+                                </strong>
+
+                                <small data-i18n="adjustTimeDescription">
+                                    Añade o resta tiempo a un fichaje
+                                </small>
+
+                            </span>
+
+                            <span class="quick-action-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- RECENT -->
+
+                    <div class="section-heading recent-heading">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="recentActivity"
+                            >
+                                Actividad reciente
+                            </span>
+
+                            <h2 data-i18n="latestEntries">
+                                Últimos fichajes
+                            </h2>
+
+                        </div>
+
+
+                        <button
+                            id="viewAllHistoryBtn"
+                            class="text-button"
+                            type="button"
+                        >
+                            <span data-i18n="viewAll">
+                                Ver todo
+                            </span>
+                            →
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="recentEntriesContainer"
+                        class="recent-entries"
+                    ></div>
+
+                </section>
+
+
+                <!-- =========================
+                     HISTORY
+                ========================== -->
+
+                <section
+                    id="historySection"
+                    class="page-section"
+                    data-section-content="history"
+                >
+
+                    <div class="page-header">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="history"
+                            >
+                                Historial
+                            </span>
+
+                            <h1 data-i18n="workHistory">
+                                Historial de trabajo
+                            </h1>
+
+                            <p data-i18n="historyDescription">
+                                Consulta todos tus fichajes y horas realizadas.
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            id="historyAddBtn"
+                            class="primary-button"
+                            type="button"
+                        >
+                            + <span data-i18n="addEntry">
+                                Añadir fichaje
+                            </span>
+                        </button>
+
+                    </div>
+
+
+                    <div class="filter-card">
+
+                        <div class="filter-group">
+
+                            <label
+                                for="historyPeriodFilter"
+                                data-i18n="period"
+                            >
+                                Periodo
+                            </label>
+
+                            <select
+                                id="historyPeriodFilter"
+                                class="form-control"
+                            >
+
+                                <option value="all">
+                                    Todos
+                                </option>
+
+                                <option value="today">
+                                    Hoy
+                                </option>
+
+                                <option value="week">
+                                    Esta semana
+                                </option>
+
+                                <option value="month">
+                                    Este mes
+                                </option>
+
+                                <option value="year">
+                                    Este año
+                                </option>
+
+                                <option value="custom">
+                                    Rango personalizado
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div
+                            id="historyCustomDates"
+                            class="filter-custom-dates hidden"
+                        >
+
+                            <div class="filter-group">
+
+                                <label
+                                    for="historyFromDate"
+                                    data-i18n="from"
+                                >
+                                    Desde
+                                </label>
+
+                                <input
+                                    id="historyFromDate"
+                                    class="form-control"
+                                    type="date"
+                                >
+
+                            </div>
+
+
+                            <div class="filter-group">
+
+                                <label
+                                    for="historyToDate"
+                                    data-i18n="to"
+                                >
+                                    Hasta
+                                </label>
+
+                                <input
+                                    id="historyToDate"
+                                    class="form-control"
+                                    type="date"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            id="clearHistoryFilterBtn"
+                            class="secondary-button"
+                            type="button"
+                        >
+                            <span data-i18n="clearFilter">
+                                Limpiar
+                            </span>
+                        </button>
+
+                    </div>
+
+
+                    <div class="history-summary">
+
+                        <div class="history-summary-item">
+
+                            <span data-i18n="daysWorked">
+                                Días trabajados
+                            </span>
+
+                            <strong id="historyDaysCount">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div class="history-summary-item">
+
+                            <span data-i18n="totalHours">
+                                Horas totales
+                            </span>
+
+                            <strong id="historyTotalHours">
+                                0h 00m
+                            </strong>
+
+                        </div>
+
+
+                        <div class="history-summary-item">
+
+                            <span data-i18n="average">
+                                Promedio
+                            </span>
+
+                            <strong id="historyAverageHours">
+                                0h 00m
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="historyContainer"
+                        class="history-container"
+                    ></div>
+
+                </section>
+
+
+                <!-- =========================
+                     STATISTICS
+                ========================== -->
+
+                <section
+                    id="statisticsSection"
+                    class="page-section"
+                    data-section-content="statistics"
+                >
+
+                    <div class="page-header">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="statistics"
+                            >
+                                Estadísticas
+                            </span>
+
+                            <h1 data-i18n="yourStatistics">
+                                Tus estadísticas
+                            </h1>
+
+                            <p data-i18n="statisticsDescription">
+                                Analiza tus horas trabajadas.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stats-grid">
+
+                        <article class="large-stat-card">
+
+                            <span data-i18n="totalHours">
+                                Horas totales
+                            </span>
+
+                            <strong id="statisticsTotalHours">
+                                0h 00m
+                            </strong>
+
+                            <small id="statisticsTotalDays">
+                                0 días
+                            </small>
+
+                        </article>
+
+
+                        <article class="large-stat-card">
+
+                            <span data-i18n="dailyAverage">
+                                Promedio diario
+                            </span>
+
+                            <strong id="statisticsDailyAverage">
+                                0h 00m
+                            </strong>
+
+                            <small data-i18n="basedOnWorkedDays">
+                                Basado en días trabajados
+                            </small>
+
+                        </article>
+
+
+                        <article class="large-stat-card">
+
+                            <span data-i18n="mostWorkedDay">
+                                Día con más horas
+                            </span>
+
+                            <strong id="statisticsBestDay">
+                                —
+                            </strong>
+
+                            <small id="statisticsBestDayHours">
+                                —
+                            </small>
+
+                        </article>
+
+
+                        <article class="large-stat-card">
+
+                            <span data-i18n="leastWorkedDay">
+                                Día con menos horas
+                            </span>
+
+                            <strong id="statisticsWorstDay">
+                                —
+                            </strong>
+
+                            <small id="statisticsWorstDayHours">
+                                —
+                            </small>
+
+                        </article>
+
+                    </div>
+
+
+                    <div class="section-heading chart-heading">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="activity"
+                            >
+                                Actividad
+                            </span>
+
+                            <h2 data-i18n="hoursWorked">
+                                Horas trabajadas
+                            </h2>
+
+                        </div>
+
+
+                        <select
+                            id="chartPeriod"
+                            class="form-control chart-period-select"
+                        >
+                            <option value="week">
+                                Esta semana
+                            </option>
+
+                            <option value="month">
+                                Este mes
+                            </option>
+
+                            <option value="all">
+                                Todo el historial
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    <div class="chart-card">
+
+                        <div
+                            id="hoursChart"
+                            class="hours-chart"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="breakdown"
+                            >
+                                Desglose
+                            </span>
+
+                            <h2 data-i18n="dailyBreakdown">
+                                Resumen diario
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="statisticsBreakdown"
+                        class="statistics-breakdown"
+                    ></div>
+
+                </section>
+
+
+                <!-- =========================
+                     SETTINGS
+                ========================== -->
+
+                <section
+                    id="settingsSection"
+                    class="page-section"
+                    data-section-content="settings"
+                >
+
+                    <div class="page-header">
+
+                        <div>
+
+                            <span
+                                class="section-label"
+                                data-i18n="settings"
+                            >
+                                Configuración
+                            </span>
+
+                            <h1 data-i18n="appSettings">
+                                Configuración de la aplicación
+                            </h1>
+
+                            <p data-i18n="settingsDescription">
+                                Personaliza WorkTracker.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-card">
+
+                        <div class="settings-card-header">
+
+                            <div class="settings-icon">
+                                ●
+                            </div>
+
+                            <div>
+
+                                <h2 data-i18n="profile">
+                                    Perfil
+                                </h2>
+
+                                <p data-i18n="profileDescription">
+                                    Gestiona tu nombre de usuario.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong data-i18n="username">
+                                    Nombre de usuario
+                                </strong>
+
+                                <span id="settingsUsername">
+                                    Usuario
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                id="changeUsernameBtn"
+                                class="secondary-button"
+                                type="button"
+                            >
+                                <span data-i18n="change">
+                                    Cambiar
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-card">
+
+                        <div class="settings-card-header">
+
+                            <div class="settings-icon">
+                                ◐
+                            </div>
+
+                            <div>
+
+                                <h2 data-i18n="appearance">
+                                    Apariencia
+                                </h2>
+
+                                <p data-i18n="appearanceDescription">
+                                    Personaliza el aspecto de la aplicación.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong data-i18n="darkMode">
+                                    Modo oscuro
+                                </strong>
+
+                                <span data-i18n="darkModeDescription">
+                                    Cambia entre modo claro y oscuro.
+                                </span>
+
+                            </div>
+
+
+                            <label class="switch">
+
+                                <input
+                                    id="darkModeSwitch"
+                                    type="checkbox"
+                                >
+
+                                <span class="switch-slider"></span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-card">
+
+                        <div class="settings-card-header">
+
+                            <div class="settings-icon">
+                                文
+                            </div>
+
+                            <div>
+
+                                <h2 data-i18n="language">
+                                    Idioma
+                                </h2>
+
+                                <p data-i18n="languageDescription">
+                                    Selecciona el idioma de la aplicación.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong data-i18n="appLanguage">
+                                    Idioma de la aplicación
+                                </strong>
+
+                            </div>
+
+
+                            <select
+                                id="settingsLanguage"
+                                class="form-control settings-select"
+                            >
+                                <option value="es">
+                                    Español
+                                </option>
+
+                                <option value="en">
+                                    English
+                                </option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-card">
+
+                        <div class="settings-card-header">
+
+                            <div class="settings-icon">
+                                ↕
+                            </div>
+
+                            <div>
+
+                                <h2 data-i18n="dataManagement">
+                                    Gestión de datos
+                                </h2>
+
+                                <p data-i18n="dataManagementDescription">
+                                    Tus datos se almacenan localmente.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="settings-actions">
+
+                            <button
+                                id="exportDataBtn"
+                                class="secondary-button"
+                                type="button"
+                            >
+                                ↓
+                                <span data-i18n="exportData">
+                                    Exportar datos
+                                </span>
+                            </button>
+
+
+                            <button
+                                id="importDataBtn"
+                                class="secondary-button"
+                                type="button"
+                            >
+                                ↑
+                                <span data-i18n="importData">
+                                    Importar datos
+                                </span>
+                            </button>
+
+
+                            <input
+                                id="importDataInput"
+                                type="file"
+                                accept=".json"
+                                hidden
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-card danger-zone">
+
+                        <div class="settings-card-header">
+
+                            <div class="settings-icon danger">
+                                !
+                            </div>
+
+                            <div>
+
+                                <h2 data-i18n="dangerZone">
+                                    Zona de peligro
+                                </h2>
+
+                                <p data-i18n="dangerZoneDescription">
+                                    Esta acción eliminará todos tus datos.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="settings-row">
+
+                            <div>
+
+                                <strong data-i18n="resetApplication">
+                                    Reiniciar aplicación
+                                </strong>
+
+                                <span data-i18n="resetDescription">
+                                    Elimina todos los fichajes y datos guardados.
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                id="resetDataBtn"
+                                class="danger-button"
+                                type="button"
+                            >
+                                <span data-i18n="reset">
+                                    Reiniciar
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================
+         USERNAME MODAL
+    ========================== -->
+
+    <div
+        id="usernameModal"
+        class="modal-overlay"
+    >
+
+        <div class="modal modal-small">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 data-i18n="welcomeSetup">
+                        Bienvenido a WorkTracker
+                    </h2>
+
+                    <p data-i18n="enterUsername">
+                        Introduce tu nombre para comenzar.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form id="usernameForm">
+
+                <div class="form-group">
+
+                    <label
+                        for="usernameInput"
+                        data-i18n="username"
+                    >
+                        Nombre de usuario
+                    </label>
+
+                    <input
+                        id="usernameInput"
+                        class="form-control"
+                        type="text"
+                        maxlength="30"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        class="primary-button"
+                        type="submit"
+                    >
+                        <span data-i18n="save">
+                            Guardar
+                        </span>
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         ADD ENTRY MODAL
+    ========================== -->
+
+    <div
+        id="addEntryModal"
+        class="modal-overlay"
+    >
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 data-i18n="addEntry">
+                        Añadir fichaje
+                    </h2>
+
+                    <p data-i18n="addEntryDescription">
+                        Añade manualmente horas a un día.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    type="button"
+                    data-close-modal="addEntryModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="addEntryForm">
+
+                <div class="form-group">
+
+                    <label
+                        for="addDate"
+                        data-i18n="selectDay"
+                    >
+                        Selecciona un día
+                    </label>
+
+                    <input
+                        id="addDate"
+                        class="form-control"
+                        type="date"
+                        required
+                    >
+
+                </div>
+
+
+                <div
+                    id="addEntryExistingInfo"
+                    class="info-box hidden"
+                ></div>
+
+
+                <div class="time-fields">
+
+                    <div class="form-group">
+
+                        <label
+                            for="addStartTime"
+                            data-i18n="clockIn"
+                        >
+                            Entrada
+                        </label>
+
+                        <input
+                            id="addStartTime"
+                            class="form-control"
+                            type="time"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="addEndTime"
+                            data-i18n="clockOut"
+                        >
+                            Salida
+                        </label>
+
+                        <input
+                            id="addEndTime"
+                            class="form-control"
+                            type="time"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        class="secondary-button"
+                        type="button"
+                        data-close-modal="addEntryModal"
+                    >
+                        <span data-i18n="cancel">
+                            Cancelar
+                        </span>
+                    </button>
+
+
+                    <button
+                        class="primary-button"
+                        type="submit"
+                    >
+                        <span data-i18n="save">
+                            Guardar
+                        </span>
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         EDIT ENTRY MODAL
+    ========================== -->
+
+    <div
+        id="editEntryModal"
+        class="modal-overlay"
+    >
+
+        <div class="modal modal-large">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 data-i18n="editEntries">
+                        Modificar fichajes
+                    </h2>
+
+                    <p data-i18n="editEntriesDescription">
+                        Modifica tus fichajes registrados.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    type="button"
+                    data-close-modal="editEntryModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label
+                    for="editDate"
+                    data-i18n="selectDay"
+                >
+                    Selecciona un día
+                </label>
+
+                <select
+                    id="editDate"
+                    class="form-control"
+                ></select>
+
+            </div>
+
+
+            <div
+                id="editEntriesList"
+                class="edit-entries-list"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         ADJUST TIME MODAL
+    ========================== -->
+
+    <div
+        id="adjustTimeModal"
+        class="modal-overlay"
+    >
+
+        <div class="modal modal-large">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 data-i18n="adjustTime">
+                        Ajustar tiempo
+                    </h2>
+
+                    <p data-i18n="adjustTimeModalDescription">
+                        Añade o resta tiempo al tiempo efectivo trabajado.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    type="button"
+                    data-close-modal="adjustTimeModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="adjustTimeForm">
+
+                <div class="form-group">
+
+                    <label
+                        for="adjustDate"
+                        data-i18n="selectDay"
+                    >
+                        Selecciona un día
+                    </label>
+
+                    <select
+                        id="adjustDate"
+                        class="form-control"
+                    ></select>
+
+                </div>
+
+
+                <div
+                    id="adjustEntrySelector"
+                    class="form-group hidden"
+                >
+
+                    <label
+                        for="adjustEntryId"
+                        data-i18n="selectEntry"
+                    >
+                        Selecciona un fichaje
+                    </label>
+
+                    <select
+                        id="adjustEntryId"
+                        class="form-control"
+                    ></select>
+
+                </div>
+
+
+                <div
+                    id="adjustCurrentInfo"
+                    class="adjust-current-info hidden"
+                >
+
+                    <div>
+
+                        <span data-i18n="grossTime">
+                            Tiempo bruto
+                        </span>
+
+                        <strong id="adjustGrossTime">
+                            0h 00m
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span data-i18n="currentAdjustment">
+                            Ajuste actual
+                        </span>
+
+                        <strong id="adjustCurrentValue">
+                            0m
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span data-i18n="effectiveTime">
+                            Tiempo efectivo
+                        </span>
+
+                        <strong id="adjustEffectiveTime">
+                            0h 00m
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="adjust-direction">
+
+                    <label class="adjust-option positive">
+
+                        <input
+                            type="radio"
+                            name="adjustDirection"
+                            value="add"
+                            checked
+                        >
+
+                        <span>+</span>
+
+                        <strong data-i18n="addTime">
+                            Añadir tiempo
+                        </strong>
+
+                    </label>
+
+
+                    <label class="adjust-option negative">
+
+                        <input
+                            type="radio"
+                            name="adjustDirection"
+                            value="subtract"
+                        >
+
+                        <span>−</span>
+
+                        <strong data-i18n="subtractTime">
+                            Restar tiempo
+                        </strong>
+
+                    </label>
+
+                </div>
+
+
+                <div class="duration-fields">
+
+                    <div class="form-group">
+
+                        <label
+                            for="adjustHours"
+                            data-i18n="hours"
+                        >
+                            Horas
+                        </label>
+
+                        <input
+                            id="adjustHours"
+                            class="form-control"
+                            type="number"
+                            min="0"
+                            value="0"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="adjustMinutes"
+                            data-i18n="minutes"
+                        >
+                            Minutos
+                        </label>
+
+                        <input
+                            id="adjustMinutes"
+                            class="form-control"
+                            type="number"
+                            min="0"
+                            max="59"
+                            value="0"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        class="secondary-button"
+                        type="button"
+                        data-close-modal="adjustTimeModal"
+                    >
+                        <span data-i18n="cancel">
+                            Cancelar
+                        </span>
+                    </button>
+
+
+                    <button
+                        class="primary-button"
+                        type="submit"
+                    >
+                        <span data-i18n="saveChanges">
+                            Guardar cambios
+                        </span>
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         TOAST
+    ========================== -->
+
+    <div
+        id="toastContainer"
+        class="toast-container"
+    ></div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
