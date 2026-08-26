@@ -177,6 +177,7 @@ const translations = {
         openSession: "Sesión iniciada",
 
         days: "días"
+
     },
 
 
@@ -354,6 +355,7 @@ const translations = {
         openSession: "Session started",
 
         days: "days"
+
     }
 
 };
@@ -830,26 +832,6 @@ function getTodayKey() {
 }
 
 
-/* NUEVO:
-   Obtiene la fecha de ayer.
-   Ejemplo:
-   Si hoy es 25/08/2026
-   devuelve 24/08/2026
-*/
-
-function getYesterdayKey() {
-
-    const yesterday = new Date();
-
-    yesterday.setDate(
-        yesterday.getDate() - 1
-    );
-
-    return getDateKey(yesterday);
-
-}
-
-
 function getCreationDateKey() {
 
     return getDateKey(
@@ -859,34 +841,76 @@ function getCreationDateKey() {
 }
 
 
-/* CORREGIDO:
-   Solo permite crear fichajes:
-   - Hoy
-   - Ayer
+/*
+    Se permite únicamente:
 
-   Nunca:
-   - Antes de ayer
-   - Fechas futuras
-
-   También respeta la fecha de creación
-   de la aplicación.
+    - Hoy.
+    - Ayer.
+    - Nunca una fecha futura.
+    - Nunca una fecha anterior
+      a la creación de la aplicación.
 */
-
 function isValidEntryDate(dateKey) {
 
-    const yesterday = getYesterdayKey();
-    const today = getTodayKey();
+    if (!dateKey) {
+        return false;
+    }
+
+    const today = parseDateKey(getTodayKey());
+
+    const yesterday = new Date(today);
+
+    yesterday.setDate(
+        yesterday.getDate() - 1
+    );
+
+    const selected =
+        parseDateKey(dateKey);
+
+    const created =
+        parseDateKey(
+            getCreationDateKey()
+        );
 
     return (
-        dateKey >= yesterday &&
-        dateKey <= today
+        selected >= created
+        &&
+        selected >= yesterday
+        &&
+        selected <= today
     );
 
 }
 
+
+/*
+    Compatible con:
+
+    HH:MM
+    HH:MM:SS
+*/
 function createDateTime(dateKey, time) {
 
-    return new Date(`${dateKey}T${time}:00`);
+    if (!dateKey || !time) {
+        return null;
+    }
+
+    const parts = time.split(":");
+
+    const hours = Number(parts[0]) || 0;
+    const minutes = Number(parts[1]) || 0;
+    const seconds = Number(parts[2]) || 0;
+
+    const date = parseDateKey(dateKey);
+
+    date.setHours(
+        hours,
+        minutes,
+        seconds,
+        0
+    );
+
+    return date;
 
 }
 
@@ -955,7 +979,9 @@ function getEntryStartDateTime(entry) {
 function getEntryEndDateTime(entry) {
 
     if (!entry.end) {
+
         return new Date();
+
     }
 
     const start =
@@ -967,10 +993,21 @@ function getEntryEndDateTime(entry) {
             entry.end
         );
 
-    if (end <= start) {
+
+    /*
+        Solo añadimos un día cuando
+        la salida es realmente anterior
+        a la entrada.
+
+        IMPORTANTE:
+        end === start NO suma 24 horas.
+    */
+    if (end < start) {
+
         end.setDate(
             end.getDate() + 1
         );
+
     }
 
     return end;
@@ -985,6 +1022,10 @@ function getGrossMinutes(entry) {
 
     const end =
         getEntryEndDateTime(entry);
+
+    if (!start || !end) {
+        return 0;
+    }
 
     return Math.max(
         0,
@@ -1002,7 +1043,9 @@ function getEffectiveMinutes(entry) {
         getGrossMinutes(entry);
 
     const adjustment =
-        Number(entry.adjustmentMinutes || 0);
+        Number(
+            entry.adjustmentMinutes || 0
+        );
 
     return Math.max(
         0,
@@ -1033,13 +1076,30 @@ function getDayMinutes(date) {
 }
 
 
-function getTotalMinutes(entries = state.entries) {
+function getTotalMinutes(
+    entries = state.entries
+) {
 
     return entries.reduce(
         (total, entry) =>
             total + getEffectiveMinutes(entry),
         0
     );
+
+}
+
+
+/* =========================
+   TIME DISPLAY HELPERS
+========================= */
+
+function formatEntryTime(time) {
+
+    if (!time) {
+        return "—";
+    }
+
+    return time.slice(0, 5);
 
 }
 
@@ -1087,13 +1147,6 @@ function formatDurationWithSeconds(seconds) {
         seconds % 60;
 
     return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
-
-}
-
-
-function formatTime(time) {
-
-    return time || "—";
 
 }
 
@@ -1300,7 +1353,7 @@ function clockOut() {
     const now = new Date();
 
     entry.end =
-        `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
     entry.updatedAt =
         now.toISOString();
@@ -1372,17 +1425,33 @@ function updateLiveTimer() {
 
     }
 
+    const now = new Date();
+
     const start =
         getEntryStartDateTime(entry);
 
+    const startMinute =
+        new Date(start);
+
+    startMinute.setSeconds(
+        0,
+        0
+    );
+
     const seconds =
-        Math.floor(
-            (Date.now() - start.getTime())
+        Math.round(
+            (
+                now.getTime()
+                -
+                startMinute.getTime()
+            )
             / 1000
         );
 
     counter.textContent =
-        formatDurationWithSeconds(seconds);
+        formatDurationWithSeconds(
+            Math.max(0, seconds)
+        );
 
     updateWorkStatus();
 
@@ -1430,6 +1499,7 @@ function updateWorkStatus() {
             "clockOutBtn"
         );
 
+
     if (entry) {
 
         title.textContent =
@@ -1442,7 +1512,7 @@ function updateWorkStatus() {
             "work-status-indicator active";
 
         info.textContent =
-            `${t("openSession")}: ${entry.start}`;
+            `${t("openSession")}: ${formatEntryTime(entry.start)}`;
 
         clockInButton.disabled = true;
 
@@ -1496,6 +1566,7 @@ function updateDashboardStats() {
 
     let monthMinutes = 0;
 
+
     state.entries.forEach(entry => {
 
         const date =
@@ -1504,13 +1575,17 @@ function updateDashboardStats() {
         const minutes =
             getEffectiveMinutes(entry);
 
+
         if (
             date >= weekStart
             &&
             date <= weekEnd
         ) {
+
             weekMinutes += minutes;
+
         }
+
 
         if (
             date.getMonth()
@@ -1519,7 +1594,9 @@ function updateDashboardStats() {
             date.getFullYear()
                 === todayDate.getFullYear()
         ) {
+
             monthMinutes += minutes;
+
         }
 
     });
@@ -1564,6 +1641,7 @@ function renderRecentEntries() {
             "recentEntriesContainer"
         );
 
+
     const entries =
         [...state.entries]
             .sort((a, b) => {
@@ -1600,7 +1678,7 @@ function renderRecentEntries() {
 
             const end =
                 entry.end
-                    ? entry.end
+                    ? formatEntryTime(entry.end)
                     : "…";
 
             return `
@@ -1617,7 +1695,7 @@ function renderRecentEntries() {
                         </strong>
 
                         <span>
-                            ${entry.start} → ${end}
+                            ${formatEntryTime(entry.start)} → ${end}
                         </span>
 
                     </div>
@@ -1662,13 +1740,16 @@ function getFilteredEntries() {
         const entryDate =
             parseDateKey(entry.date);
 
+
         if (period === "all") {
             return true;
         }
 
+
         if (period === "today") {
             return entry.date === todayKey;
         }
+
 
         if (period === "week") {
 
@@ -1679,6 +1760,7 @@ function getFilteredEntries() {
             );
 
         }
+
 
         if (period === "month") {
 
@@ -1692,6 +1774,7 @@ function getFilteredEntries() {
 
         }
 
+
         if (period === "year") {
 
             return (
@@ -1700,6 +1783,7 @@ function getFilteredEntries() {
             );
 
         }
+
 
         if (period === "custom") {
 
@@ -1717,9 +1801,11 @@ function getFilteredEntries() {
                     )
                     .value;
 
+
             if (from && entry.date < from) {
                 return false;
             }
+
 
             if (to && entry.date > to) {
                 return false;
@@ -1783,7 +1869,8 @@ function renderHistory() {
             "historyContainer"
         );
 
-    const grouped = groupEntriesByDate(entries);
+    const grouped =
+        groupEntriesByDate(entries);
 
     const dates =
         Object.keys(grouped)
@@ -1865,21 +1952,31 @@ function renderHistory() {
                                     <div class="history-entry">
 
                                         <div class="history-entry-time">
-                                            ${entry.start}
+
+                                            ${formatEntryTime(entry.start)}
+
                                             <span>→</span>
-                                            ${entry.end || "…"}
+
+                                            ${
+                                                entry.end
+                                                    ? formatEntryTime(entry.end)
+                                                    : "…"
+                                            }
 
                                             ${
                                                 !entry.end
                                                     ? `<span>(${escapeHTML(t("active"))})</span>`
                                                     : ""
                                             }
+
                                         </div>
 
                                         <div class="history-entry-duration">
+
                                             ${formatDuration(
                                                 getEffectiveMinutes(entry)
                                             )}
+
                                         </div>
 
                                         <div class="history-entry-actions">
@@ -2011,25 +2108,40 @@ function groupEntriesByDate(entries) {
 function openAddEntryModal() {
 
     const dateInput =
-        document.getElementById("addDate");
+        document.getElementById(
+            "addDate"
+        );
 
-    dateInput.min = getYesterdayKey();
-    dateInput.max = getTodayKey();
+    dateInput.min =
+        getCreationDateKey();
 
-    dateInput.value = getTodayKey();
+    dateInput.max =
+        getTodayKey();
+
+    dateInput.value =
+        getTodayKey();
+
 
     document
-        .getElementById("addStartTime")
+        .getElementById(
+            "addStartTime"
+        )
         .value = "";
 
+
     document
-        .getElementById("addEndTime")
+        .getElementById(
+            "addEndTime"
+        )
         .value = "";
+
 
     updateAddEntryInfo();
 
     openModal("addEntryModal");
+
 }
+
 
 function updateAddEntryInfo() {
 
@@ -2046,6 +2158,7 @@ function updateAddEntryInfo() {
                 "addEntryExistingInfo"
             );
 
+
     if (!date) {
 
         box.classList.add("hidden");
@@ -2054,8 +2167,10 @@ function updateAddEntryInfo() {
 
     }
 
+
     const entries =
         getEntriesForDate(date);
+
 
     if (entries.length) {
 
@@ -2102,15 +2217,6 @@ function addManualEntry(event) {
             .value;
 
 
-    /*
-       SEGURIDAD ADICIONAL
-
-       Aunque el usuario intente modificar
-       manualmente el input desde el navegador,
-       solo podrá guardar un fichaje de:
-       - Hoy
-       - Ayer
-    */
     if (!isValidEntryDate(date)) {
 
         showToast(
@@ -2294,7 +2400,7 @@ function renderEditEntries() {
                                 id="edit-start-${entry.id}"
                                 class="form-control"
                                 type="time"
-                                value="${entry.start}"
+                                value="${formatEntryTime(entry.start)}"
                                 required
                             >
 
@@ -2311,7 +2417,7 @@ function renderEditEntries() {
                                 id="edit-end-${entry.id}"
                                 class="form-control"
                                 type="time"
-                                value="${entry.end || ""}"
+                                value="${entry.end ? formatEntryTime(entry.end) : ""}"
                                 ${entry.end ? "required" : ""}
                             >
 
@@ -2585,7 +2691,7 @@ function updateAdjustEntries() {
         +
         entries.map(entry => `
             <option value="${entry.id}">
-                ${entry.start} → ${entry.end || "…"}
+                ${formatEntryTime(entry.start)} → ${entry.end ? formatEntryTime(entry.end) : "…"}
             </option>
         `)
         .join("");
@@ -3109,9 +3215,11 @@ function renderBreakdown(data) {
                         </span>
 
                         <div class="breakdown-progress">
+
                             <span
                                 style="width:${percentage}%"
                             ></span>
+
                         </div>
 
                         <strong class="breakdown-hours">
@@ -3459,7 +3567,9 @@ function importData(event) {
                     imported.entries
                 )
             ) {
+
                 throw new Error();
+
             }
 
 
@@ -3470,6 +3580,7 @@ function importData(event) {
             state.settings.language ||= "es";
             state.settings.theme ||= "dark";
             state.settings.createdAt ||= new Date().toISOString();
+
 
             saveState();
 
@@ -3511,12 +3622,15 @@ function resetApplication() {
         return;
     }
 
+
     localStorage.removeItem(
         STORAGE_KEY
     );
 
+
     state =
         getDefaultState();
+
 
     saveState();
 
