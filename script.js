@@ -1457,12 +1457,10 @@ function updateLiveTimer() {
     const entry =
         getOpenEntry();
 
-
     const counter =
         document.getElementById(
             "liveCounter"
         );
-
 
     if (!entry) {
 
@@ -1475,29 +1473,14 @@ function updateLiveTimer() {
 
     }
 
-
-    const start =
-        getEntryStartDateTime(entry);
-
+    const now =
+        new Date();
 
     const seconds =
-        Math.max(
-            0,
-            Math.floor(
-                (
-                    Date.now()
-                    -
-                    start.getTime()
-                )
-                /
-                1000
-            )
-        );
-
+        now.getSeconds();
 
     counter.textContent =
-        formatDurationWithSeconds(seconds);
-
+        `00:00:${pad(seconds)}`;
 
     updateWorkStatus();
 
