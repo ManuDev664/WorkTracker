@@ -177,7 +177,6 @@ const translations = {
         openSession: "Sesión iniciada",
 
         days: "días"
-
     },
 
 
@@ -355,7 +354,6 @@ const translations = {
         openSession: "Session started",
 
         days: "days"
-
     }
 
 };
@@ -832,6 +830,26 @@ function getTodayKey() {
 }
 
 
+/* NUEVO:
+   Obtiene la fecha de ayer.
+   Ejemplo:
+   Si hoy es 25/08/2026
+   devuelve 24/08/2026
+*/
+
+function getYesterdayKey() {
+
+    const yesterday = new Date();
+
+    yesterday.setDate(
+        yesterday.getDate() - 1
+    );
+
+    return getDateKey(yesterday);
+
+}
+
+
 function getCreationDateKey() {
 
     return getDateKey(
@@ -841,76 +859,34 @@ function getCreationDateKey() {
 }
 
 
-/*
-    Se permite únicamente:
+/* CORREGIDO:
+   Solo permite crear fichajes:
+   - Hoy
+   - Ayer
 
-    - Hoy.
-    - Ayer.
-    - Nunca una fecha futura.
-    - Nunca una fecha anterior
-      a la creación de la aplicación.
+   Nunca:
+   - Antes de ayer
+   - Fechas futuras
+
+   También respeta la fecha de creación
+   de la aplicación.
 */
+
 function isValidEntryDate(dateKey) {
 
-    if (!dateKey) {
-        return false;
-    }
-
-    const today = parseDateKey(getTodayKey());
-
-    const yesterday = new Date(today);
-
-    yesterday.setDate(
-        yesterday.getDate() - 1
-    );
-
-    const selected =
-        parseDateKey(dateKey);
-
-    const created =
-        parseDateKey(
-            getCreationDateKey()
-        );
+    const yesterday = getYesterdayKey();
+    const today = getTodayKey();
 
     return (
-        selected >= created
-        &&
-        selected >= yesterday
-        &&
-        selected <= today
+        dateKey >= yesterday &&
+        dateKey <= today
     );
 
 }
 
-
-/*
-    Compatible con:
-
-    HH:MM
-    HH:MM:SS
-*/
 function createDateTime(dateKey, time) {
 
-    if (!dateKey || !time) {
-        return null;
-    }
-
-    const parts = time.split(":");
-
-    const hours = Number(parts[0]) || 0;
-    const minutes = Number(parts[1]) || 0;
-    const seconds = Number(parts[2]) || 0;
-
-    const date = parseDateKey(dateKey);
-
-    date.setHours(
-        hours,
-        minutes,
-        seconds,
-        0
-    );
-
-    return date;
+    return new Date(`${dateKey}T${time}:00`);
 
 }
 
@@ -979,9 +955,7 @@ function getEntryStartDateTime(entry) {
 function getEntryEndDateTime(entry) {
 
     if (!entry.end) {
-
         return new Date();
-
     }
 
     const start =
@@ -993,21 +967,10 @@ function getEntryEndDateTime(entry) {
             entry.end
         );
 
-
-    /*
-        Solo añadimos un día cuando
-        la salida es realmente anterior
-        a la entrada.
-
-        IMPORTANTE:
-        end === start NO suma 24 horas.
-    */
-    if (end < start) {
-
+    if (end <= start) {
         end.setDate(
             end.getDate() + 1
         );
-
     }
 
     return end;
@@ -1022,10 +985,6 @@ function getGrossMinutes(entry) {
 
     const end =
         getEntryEndDateTime(entry);
-
-    if (!start || !end) {
-        return 0;
-    }
 
     return Math.max(
         0,
@@ -1043,9 +1002,7 @@ function getEffectiveMinutes(entry) {
         getGrossMinutes(entry);
 
     const adjustment =
-        Number(
-            entry.adjustmentMinutes || 0
-        );
+        Number(entry.adjustmentMinutes || 0);
 
     return Math.max(
         0,
@@ -1076,30 +1033,13 @@ function getDayMinutes(date) {
 }
 
 
-function getTotalMinutes(
-    entries = state.entries
-) {
+function getTotalMinutes(entries = state.entries) {
 
     return entries.reduce(
         (total, entry) =>
             total + getEffectiveMinutes(entry),
         0
     );
-
-}
-
-
-/* =========================
-   TIME DISPLAY HELPERS
-========================= */
-
-function formatEntryTime(time) {
-
-    if (!time) {
-        return "—";
-    }
-
-    return time.slice(0, 5);
 
 }
 
@@ -1147,6 +1087,13 @@ function formatDurationWithSeconds(seconds) {
         seconds % 60;
 
     return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+
+}
+
+
+function formatTime(time) {
+
+    return time || "—";
 
 }
 
@@ -1353,7 +1300,7 @@ function clockOut() {
     const now = new Date();
 
     entry.end =
-        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
     entry.updatedAt =
         now.toISOString();
@@ -1425,33 +1372,17 @@ function updateLiveTimer() {
 
     }
 
-    const now = new Date();
-
     const start =
         getEntryStartDateTime(entry);
 
-    const startMinute =
-        new Date(start);
-
-    startMinute.setSeconds(
-        0,
-        0
-    );
-
     const seconds =
-        Math.round(
-            (
-                now.getTime()
-                -
-                startMinute.getTime()
-            )
+        Math.floor(
+            (Date.now() - start.getTime())
             / 1000
         );
 
     counter.textContent =
-        formatDurationWithSeconds(
-            Math.max(0, seconds)
-        );
+        formatDurationWithSeconds(seconds);
 
     updateWorkStatus();
 
@@ -1499,7 +1430,6 @@ function updateWorkStatus() {
             "clockOutBtn"
         );
 
-
     if (entry) {
 
         title.textContent =
@@ -1512,7 +1442,7 @@ function updateWorkStatus() {
             "work-status-indicator active";
 
         info.textContent =
-            `${t("openSession")}: ${formatEntryTime(entry.start)}`;
+            `${t("openSession")}: ${entry.start}`;
 
         clockInButton.disabled = true;
 
@@ -1566,7 +1496,6 @@ function updateDashboardStats() {
 
     let monthMinutes = 0;
 
-
     state.entries.forEach(entry => {
 
         const date =
@@ -1575,17 +1504,13 @@ function updateDashboardStats() {
         const minutes =
             getEffectiveMinutes(entry);
 
-
         if (
             date >= weekStart
             &&
             date <= weekEnd
         ) {
-
             weekMinutes += minutes;
-
         }
-
 
         if (
             date.getMonth()
@@ -1594,9 +1519,7 @@ function updateDashboardStats() {
             date.getFullYear()
                 === todayDate.getFullYear()
         ) {
-
             monthMinutes += minutes;
-
         }
 
     });
@@ -1641,7 +1564,6 @@ function renderRecentEntries() {
             "recentEntriesContainer"
         );
 
-
     const entries =
         [...state.entries]
             .sort((a, b) => {
@@ -1678,7 +1600,7 @@ function renderRecentEntries() {
 
             const end =
                 entry.end
-                    ? formatEntryTime(entry.end)
+                    ? entry.end
                     : "…";
 
             return `
@@ -1695,7 +1617,7 @@ function renderRecentEntries() {
                         </strong>
 
                         <span>
-                            ${formatEntryTime(entry.start)} → ${end}
+                            ${entry.start} → ${end}
                         </span>
 
                     </div>
@@ -1740,16 +1662,13 @@ function getFilteredEntries() {
         const entryDate =
             parseDateKey(entry.date);
 
-
         if (period === "all") {
             return true;
         }
 
-
         if (period === "today") {
             return entry.date === todayKey;
         }
-
 
         if (period === "week") {
 
@@ -1760,7 +1679,6 @@ function getFilteredEntries() {
             );
 
         }
-
 
         if (period === "month") {
 
@@ -1774,7 +1692,6 @@ function getFilteredEntries() {
 
         }
 
-
         if (period === "year") {
 
             return (
@@ -1783,7 +1700,6 @@ function getFilteredEntries() {
             );
 
         }
-
 
         if (period === "custom") {
 
@@ -1801,11 +1717,9 @@ function getFilteredEntries() {
                     )
                     .value;
 
-
             if (from && entry.date < from) {
                 return false;
             }
-
 
             if (to && entry.date > to) {
                 return false;
@@ -1869,8 +1783,7 @@ function renderHistory() {
             "historyContainer"
         );
 
-    const grouped =
-        groupEntriesByDate(entries);
+    const grouped = groupEntriesByDate(entries);
 
     const dates =
         Object.keys(grouped)
@@ -1952,31 +1865,21 @@ function renderHistory() {
                                     <div class="history-entry">
 
                                         <div class="history-entry-time">
-
-                                            ${formatEntryTime(entry.start)}
-
+                                            ${entry.start}
                                             <span>→</span>
-
-                                            ${
-                                                entry.end
-                                                    ? formatEntryTime(entry.end)
-                                                    : "…"
-                                            }
+                                            ${entry.end || "…"}
 
                                             ${
                                                 !entry.end
                                                     ? `<span>(${escapeHTML(t("active"))})</span>`
                                                     : ""
                                             }
-
                                         </div>
 
                                         <div class="history-entry-duration">
-
                                             ${formatDuration(
                                                 getEffectiveMinutes(entry)
                                             )}
-
                                         </div>
 
                                         <div class="history-entry-actions">
@@ -2108,40 +2011,25 @@ function groupEntriesByDate(entries) {
 function openAddEntryModal() {
 
     const dateInput =
-        document.getElementById(
-            "addDate"
-        );
+        document.getElementById("addDate");
 
-    dateInput.min =
-        getCreationDateKey();
+    dateInput.min = getYesterdayKey();
+    dateInput.max = getTodayKey();
 
-    dateInput.max =
-        getTodayKey();
-
-    dateInput.value =
-        getTodayKey();
-
+    dateInput.value = getTodayKey();
 
     document
-        .getElementById(
-            "addStartTime"
-        )
+        .getElementById("addStartTime")
         .value = "";
-
 
     document
-        .getElementById(
-            "addEndTime"
-        )
+        .getElementById("addEndTime")
         .value = "";
-
 
     updateAddEntryInfo();
 
     openModal("addEntryModal");
-
 }
-
 
 function updateAddEntryInfo() {
 
@@ -2158,7 +2046,6 @@ function updateAddEntryInfo() {
                 "addEntryExistingInfo"
             );
 
-
     if (!date) {
 
         box.classList.add("hidden");
@@ -2167,10 +2054,8 @@ function updateAddEntryInfo() {
 
     }
 
-
     const entries =
         getEntriesForDate(date);
-
 
     if (entries.length) {
 
@@ -2217,6 +2102,15 @@ function addManualEntry(event) {
             .value;
 
 
+    /*
+       SEGURIDAD ADICIONAL
+
+       Aunque el usuario intente modificar
+       manualmente el input desde el navegador,
+       solo podrá guardar un fichaje de:
+       - Hoy
+       - Ayer
+    */
     if (!isValidEntryDate(date)) {
 
         showToast(
@@ -2400,7 +2294,7 @@ function renderEditEntries() {
                                 id="edit-start-${entry.id}"
                                 class="form-control"
                                 type="time"
-                                value="${formatEntryTime(entry.start)}"
+                                value="${entry.start}"
                                 required
                             >
 
@@ -2417,7 +2311,7 @@ function renderEditEntries() {
                                 id="edit-end-${entry.id}"
                                 class="form-control"
                                 type="time"
-                                value="${entry.end ? formatEntryTime(entry.end) : ""}"
+                                value="${entry.end || ""}"
                                 ${entry.end ? "required" : ""}
                             >
 
@@ -2501,1230 +2395,4 @@ function saveEditedEntry(event, id) {
     const end =
         document
             .getElementById(
-                `edit-end-${id}`
-            )
-            .value;
-
-
-    if (!start) {
-
-        showToast(
-            t("invalidTime"),
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    entry.start = start;
-
-    entry.end = end || null;
-
-    entry.updatedAt =
-        new Date().toISOString();
-
-
-    saveState();
-
-    refreshApplication();
-
-    renderEditEntries();
-
-    showToast(
-        t("entryUpdated"),
-        "success"
-    );
-
-}
-
-
-/* =========================
-   DELETE
-========================= */
-
-function deleteEntry(id) {
-
-    if (!confirm(t("confirmDelete"))) {
-        return;
-    }
-
-    state.entries =
-        state.entries.filter(
-            entry => entry.id !== id
-        );
-
-    saveState();
-
-    refreshApplication();
-
-    renderEditEntries();
-
-    closeModal("adjustTimeModal");
-
-    showToast(
-        t("entryDeleted"),
-        "success"
-    );
-
-}
-
-
-/* =========================
-   ADJUST TIME
-========================= */
-
-function openAdjustTimeModal() {
-
-    const dates =
-        [...new Set(
-            state.entries.map(
-                entry => entry.date
-            )
-        )]
-        .sort((a, b) =>
-            b.localeCompare(a)
-        );
-
-
-    const select =
-        document
-            .getElementById(
-                "adjustDate"
-            );
-
-
-    select.innerHTML =
-        `<option value="">${escapeHTML(t("selectDay"))}</option>`
-        +
-        dates.map(date => `
-            <option value="${date}">
-                ${formatDate(date)}
-            </option>
-        `)
-        .join("");
-
-
-    document
-        .getElementById(
-            "adjustEntrySelector"
-        )
-        .classList.add("hidden");
-
-
-    document
-        .getElementById(
-            "adjustCurrentInfo"
-        )
-        .classList.add("hidden");
-
-
-    document
-        .getElementById(
-            "adjustHours"
-        )
-        .value = 0;
-
-
-    document
-        .getElementById(
-            "adjustMinutes"
-        )
-        .value = 0;
-
-
-    openModal("adjustTimeModal");
-
-}
-
-
-function updateAdjustEntries() {
-
-    const date =
-        document
-            .getElementById(
-                "adjustDate"
-            )
-            .value;
-
-
-    const entries =
-        getEntriesForDate(date);
-
-
-    const selector =
-        document
-            .getElementById(
-                "adjustEntrySelector"
-            );
-
-
-    const select =
-        document
-            .getElementById(
-                "adjustEntryId"
-            );
-
-
-    document
-        .getElementById(
-            "adjustCurrentInfo"
-        )
-        .classList.add("hidden");
-
-
-    if (!entries.length) {
-
-        selector.classList.add("hidden");
-
-        return;
-
-    }
-
-
-    selector.classList.remove("hidden");
-
-
-    select.innerHTML =
-        `<option value="">${escapeHTML(t("selectEntry"))}</option>`
-        +
-        entries.map(entry => `
-            <option value="${entry.id}">
-                ${formatEntryTime(entry.start)} → ${entry.end ? formatEntryTime(entry.end) : "…"}
-            </option>
-        `)
-        .join("");
-
-}
-
-
-function updateAdjustInfo() {
-
-    const id =
-        document
-            .getElementById(
-                "adjustEntryId"
-            )
-            .value;
-
-
-    const entry =
-        state.entries.find(
-            item => item.id === id
-        );
-
-
-    const info =
-        document
-            .getElementById(
-                "adjustCurrentInfo"
-            );
-
-
-    if (!entry) {
-
-        info.classList.add("hidden");
-
-        return;
-
-    }
-
-
-    info.classList.remove("hidden");
-
-
-    document
-        .getElementById(
-            "adjustGrossTime"
-        )
-        .textContent =
-            formatDuration(
-                getGrossMinutes(entry)
-            );
-
-
-    document
-        .getElementById(
-            "adjustCurrentValue"
-        )
-        .textContent =
-            formatAdjustment(
-                Number(
-                    entry.adjustmentMinutes || 0
-                )
-            );
-
-
-    document
-        .getElementById(
-            "adjustEffectiveTime"
-        )
-        .textContent =
-            formatDuration(
-                getEffectiveMinutes(entry)
-            );
-
-}
-
-
-function saveAdjustment(event) {
-
-    event.preventDefault();
-
-
-    const id =
-        document
-            .getElementById(
-                "adjustEntryId"
-            )
-            .value;
-
-
-    const entry =
-        state.entries.find(
-            item => item.id === id
-        );
-
-
-    if (!entry) {
-        return;
-    }
-
-
-    const hours =
-        Math.max(
-            0,
-            Number(
-                document
-                    .getElementById(
-                        "adjustHours"
-                    )
-                    .value
-            ) || 0
-        );
-
-
-    const minutes =
-        Math.min(
-            59,
-            Math.max(
-                0,
-                Number(
-                    document
-                        .getElementById(
-                            "adjustMinutes"
-                        )
-                        .value
-                ) || 0
-            )
-        );
-
-
-    const direction =
-        document
-            .querySelector(
-                "input[name='adjustDirection']:checked"
-            )
-            .value;
-
-
-    const amount =
-        Math.floor(hours * 60 + minutes);
-
-
-    if (!amount) {
-        return;
-    }
-
-
-    const signedAmount =
-        direction === "add"
-            ? amount
-            : -amount;
-
-
-    const current =
-        Number(
-            entry.adjustmentMinutes || 0
-        );
-
-
-    const newAdjustment =
-        current + signedAmount;
-
-
-    entry.adjustmentMinutes =
-        Math.max(
-            -getGrossMinutes(entry),
-            newAdjustment
-        );
-
-
-    entry.updatedAt =
-        new Date().toISOString();
-
-
-    saveState();
-
-    closeModal("adjustTimeModal");
-
-    refreshApplication();
-
-    showToast(
-        t("adjustmentSaved"),
-        "success"
-    );
-
-}
-
-
-/* =========================
-   STATISTICS
-========================= */
-
-function getDailyData() {
-
-    const grouped =
-        groupEntriesByDate(
-            state.entries
-        );
-
-
-    return Object
-        .keys(grouped)
-        .sort()
-        .map(date => {
-
-            const minutes =
-                grouped[date].reduce(
-                    (total, entry) =>
-                        total
-                        +
-                        getEffectiveMinutes(entry),
-                    0
-                );
-
-            return {
-                date,
-                minutes
-            };
-
-        })
-        .filter(
-            item => item.minutes > 0
-        );
-
-}
-
-
-function renderStatistics() {
-
-    const dailyData =
-        getDailyData();
-
-
-    const total =
-        dailyData.reduce(
-            (sum, item) =>
-                sum + item.minutes,
-            0
-        );
-
-
-    const days =
-        dailyData.length;
-
-
-    const average =
-        days
-            ? total / days
-            : 0;
-
-
-    document
-        .getElementById(
-            "statisticsTotalHours"
-        )
-        .textContent =
-            formatDuration(total);
-
-
-    document
-        .getElementById(
-            "statisticsTotalDays"
-        )
-        .textContent =
-            `${days} ${t("days")}`;
-
-
-    document
-        .getElementById(
-            "statisticsDailyAverage"
-        )
-        .textContent =
-            formatDuration(average);
-
-
-    if (dailyData.length) {
-
-        const best =
-            [...dailyData]
-                .sort(
-                    (a, b) =>
-                        b.minutes - a.minutes
-                )[0];
-
-
-        const worst =
-            [...dailyData]
-                .sort(
-                    (a, b) =>
-                        a.minutes - b.minutes
-                )[0];
-
-
-        document
-            .getElementById(
-                "statisticsBestDay"
-            )
-            .textContent =
-                formatShortDate(best.date);
-
-
-        document
-            .getElementById(
-                "statisticsBestDayHours"
-            )
-            .textContent =
-                formatDuration(best.minutes);
-
-
-        document
-            .getElementById(
-                "statisticsWorstDay"
-            )
-            .textContent =
-                formatShortDate(worst.date);
-
-
-        document
-            .getElementById(
-                "statisticsWorstDayHours"
-            )
-            .textContent =
-                formatDuration(worst.minutes);
-
-    } else {
-
-        [
-            "statisticsBestDay",
-            "statisticsBestDayHours",
-            "statisticsWorstDay",
-            "statisticsWorstDayHours"
-        ]
-        .forEach(id => {
-
-            document
-                .getElementById(id)
-                .textContent = "—";
-
-        });
-
-    }
-
-
-    renderChart(dailyData);
-
-    renderBreakdown(dailyData);
-
-}
-
-
-function renderChart(data) {
-
-    const container =
-        document.getElementById(
-            "hoursChart"
-        );
-
-    const period =
-        document
-            .getElementById(
-                "chartPeriod"
-            )
-            .value;
-
-    const now =
-        new Date();
-
-
-    let filtered =
-        [...data];
-
-
-    if (period === "week") {
-
-        const start =
-            getWeekStart(now);
-
-        const end =
-            getWeekEnd(now);
-
-        filtered =
-            filtered.filter(item => {
-
-                const date =
-                    parseDateKey(item.date);
-
-                return (
-                    date >= start
-                    &&
-                    date <= end
-                );
-
-            });
-
-    }
-
-
-    if (period === "month") {
-
-        filtered =
-            filtered.filter(item => {
-
-                const date =
-                    parseDateKey(item.date);
-
-                return (
-                    date.getMonth()
-                        === now.getMonth()
-                    &&
-                    date.getFullYear()
-                        === now.getFullYear()
-                );
-
-            });
-
-    }
-
-
-    if (!filtered.length) {
-
-        container.innerHTML =
-            `<div class="empty-state">
-                <p>${escapeHTML(t("noHistory"))}</p>
-            </div>`;
-
-        return;
-
-    }
-
-
-    const max =
-        Math.max(
-            ...filtered.map(
-                item => item.minutes
-            )
-        );
-
-
-    container.innerHTML =
-        filtered.map(item => {
-
-            const percentage =
-                max
-                    ? Math.max(
-                        3,
-                        item.minutes / max * 100
-                    )
-                    : 0;
-
-
-            return `
-                <div class="chart-bar-wrapper">
-
-                    <span class="chart-value">
-                        ${formatDuration(item.minutes)}
-                    </span>
-
-                    <div
-                        class="chart-bar"
-                        style="height:${percentage}%"
-                    ></div>
-
-                    <span class="chart-label">
-                        ${formatShortDate(item.date)}
-                    </span>
-
-                </div>
-            `;
-
-        })
-        .join("");
-
-}
-
-
-function renderBreakdown(data) {
-
-    const container =
-        document.getElementById(
-            "statisticsBreakdown"
-        );
-
-
-    if (!data.length) {
-
-        container.innerHTML =
-            `<div class="empty-state">
-                <p>${escapeHTML(t("noHistory"))}</p>
-            </div>`;
-
-        return;
-
-    }
-
-
-    const max =
-        Math.max(
-            ...data.map(
-                item => item.minutes
-            )
-        );
-
-
-    container.innerHTML =
-        [...data]
-            .sort((a, b) =>
-                b.date.localeCompare(a.date)
-            )
-            .map(item => {
-
-                const percentage =
-                    max
-                        ? item.minutes / max * 100
-                        : 0;
-
-
-                return `
-                    <div class="breakdown-row">
-
-                        <span>
-                            ${formatShortDate(item.date)}
-                        </span>
-
-                        <div class="breakdown-progress">
-
-                            <span
-                                style="width:${percentage}%"
-                            ></span>
-
-                        </div>
-
-                        <strong class="breakdown-hours">
-                            ${formatDuration(item.minutes)}
-                        </strong>
-
-                    </div>
-                `;
-
-            })
-            .join("");
-
-}
-
-
-/* =========================
-   USERNAME
-========================= */
-
-function saveUsername(event) {
-
-    event.preventDefault();
-
-    const input =
-        document
-            .getElementById(
-                "usernameInput"
-            );
-
-
-    const username =
-        input.value.trim();
-
-
-    if (!username) {
-        return;
-    }
-
-
-    state.settings.username =
-        username;
-
-
-    saveState();
-
-    closeModal("usernameModal");
-
-    refreshApplication();
-
-    showToast(
-        t("usernameUpdated"),
-        "success"
-    );
-
-}
-
-
-/* =========================
-   SETTINGS
-========================= */
-
-function applySettings() {
-
-    document.body.classList.toggle(
-        "dark-theme",
-        state.settings.theme === "dark"
-    );
-
-
-    document
-        .getElementById(
-            "darkModeSwitch"
-        )
-        .checked =
-            state.settings.theme === "dark";
-
-
-    document
-        .getElementById(
-            "themeToggleBtn"
-        )
-        .textContent =
-            state.settings.theme === "dark"
-                ? "☾"
-                : "☀";
-
-
-    document
-        .getElementById(
-            "languageToggleBtn"
-        )
-        .textContent =
-            state.settings.language.toUpperCase();
-
-
-    document
-        .getElementById(
-            "settingsLanguage"
-        )
-        .value =
-            state.settings.language;
-
-}
-
-
-function toggleTheme() {
-
-    state.settings.theme =
-        state.settings.theme === "dark"
-            ? "light"
-            : "dark";
-
-    saveState();
-
-    applySettings();
-
-}
-
-
-function toggleLanguage() {
-
-    state.settings.language =
-        state.settings.language === "es"
-            ? "en"
-            : "es";
-
-    saveState();
-
-    refreshApplication();
-
-}
-
-
-/* =========================
-   TRANSLATION
-========================= */
-
-function t(key) {
-
-    return (
-        translations[
-            state.settings.language
-        ][key]
-        ||
-        translations.es[key]
-        ||
-        key
-    );
-
-}
-
-
-function translatePage() {
-
-    document
-        .querySelectorAll("[data-i18n]")
-        .forEach(element => {
-
-            const key =
-                element.dataset.i18n;
-
-            if (
-                translations[
-                    state.settings.language
-                ][key]
-            ) {
-
-                element.textContent =
-                    t(key);
-
-            }
-
-        });
-
-}
-
-
-/* =========================
-   PROFILE
-========================= */
-
-function updateProfile() {
-
-    const username =
-        state.settings.username
-        || "Usuario";
-
-    const initial =
-        username.charAt(0)
-            .toUpperCase();
-
-
-    document
-        .getElementById(
-            "sidebarUsername"
-        )
-        .textContent =
-            username;
-
-
-    document
-        .getElementById(
-            "welcomeUsername"
-        )
-        .textContent =
-            username;
-
-
-    document
-        .getElementById(
-            "settingsUsername"
-        )
-        .textContent =
-            username;
-
-
-    document
-        .getElementById(
-            "sidebarAvatar"
-        )
-        .textContent =
-            initial;
-
-
-    document
-        .getElementById(
-            "topbarAvatar"
-        )
-        .textContent =
-            initial;
-
-}
-
-
-/* =========================
-   MODALS
-========================= */
-
-function openModal(id) {
-
-    document
-        .getElementById(id)
-        .classList.add("open");
-
-}
-
-
-function closeModal(id) {
-
-    document
-        .getElementById(id)
-        .classList.remove("open");
-
-}
-
-
-/* =========================
-   EXPORT
-========================= */
-
-function exportData() {
-
-    if (!state.entries.length) {
-
-        showToast(
-            t("noDataToExport"),
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    const data =
-        JSON.stringify(
-            state,
-            null,
-            2
-        );
-
-
-    const blob =
-        new Blob(
-            [data],
-            {
-                type: "application/json"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(blob);
-
-
-    const link =
-        document.createElement("a");
-
-
-    link.href = url;
-
-    link.download =
-        `worktracker-${getTodayKey()}.json`;
-
-
-    link.click();
-
-    URL.revokeObjectURL(url);
-
-}
-
-
-/* =========================
-   IMPORT
-========================= */
-
-function importData(event) {
-
-    const file =
-        event.target.files[0];
-
-    if (!file) {
-        return;
-    }
-
-
-    const reader =
-        new FileReader();
-
-
-    reader.onload = loadEvent => {
-
-        try {
-
-            const imported =
-                JSON.parse(
-                    loadEvent.target.result
-                );
-
-
-            if (
-                !imported
-                ||
-                !Array.isArray(
-                    imported.entries
-                )
-            ) {
-
-                throw new Error();
-
-            }
-
-
-            state = imported;
-
-            state.settings ||= {};
-
-            state.settings.language ||= "es";
-            state.settings.theme ||= "dark";
-            state.settings.createdAt ||= new Date().toISOString();
-
-
-            saveState();
-
-            applySettings();
-
-            refreshApplication();
-
-            showToast(
-                t("importSuccess"),
-                "success"
-            );
-
-        } catch (error) {
-
-            showToast(
-                t("importError"),
-                "error"
-            );
-
-        }
-
-    };
-
-
-    reader.readAsText(file);
-
-    event.target.value = "";
-
-}
-
-
-/* =========================
-   RESET
-========================= */
-
-function resetApplication() {
-
-    if (!confirm(t("confirmReset"))) {
-        return;
-    }
-
-
-    localStorage.removeItem(
-        STORAGE_KEY
-    );
-
-
-    state =
-        getDefaultState();
-
-
-    saveState();
-
-    applySettings();
-
-    refreshApplication();
-
-    openModal("usernameModal");
-
-}
-
-
-/* =========================
-   TOAST
-========================= */
-
-function showToast(
-    message,
-    type = "success"
-) {
-
-    const container =
-        document.getElementById(
-            "toastContainer"
-        );
-
-
-    const toast =
-        document.createElement("div");
-
-
-    toast.className =
-        `toast ${type}`;
-
-
-    toast.textContent =
-        message;
-
-
-    container.appendChild(
-        toast
-    );
-
-
-    setTimeout(() => {
-
-        toast.remove();
-
-    }, 3500);
-
-}
-
-
-/* =========================
-   REFRESH
-========================= */
-
-function refreshApplication() {
-
-    translatePage();
-
-    applySettings();
-
-    updateProfile();
-
-    updateGreeting();
-
-    updateClock();
-
-    updateWorkStatus();
-
-    updateDashboardStats();
-
-    renderRecentEntries();
-
-    renderHistory();
-
-    renderStatistics();
-
-}
-
-
-/* =========================
-   SECURITY
-========================= */
-
-function escapeHTML(value) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent =
-        String(value);
-
-    return div.innerHTML;
-
-}
+                `edit-end-${id}`... (Tiempo restante: 21 KB)
