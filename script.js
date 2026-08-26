@@ -177,7 +177,6 @@ const translations = {
         openSession: "Sesión iniciada",
 
         days: "días"
-
     },
 
 
@@ -355,7 +354,6 @@ const translations = {
         openSession: "Session started",
 
         days: "days"
-
     }
 
 };
@@ -832,6 +830,19 @@ function getTodayKey() {
 }
 
 
+function getYesterdayKey() {
+
+    const yesterday = new Date();
+
+    yesterday.setDate(
+        yesterday.getDate() - 1
+    );
+
+    return getDateKey(yesterday);
+
+}
+
+
 function getCreationDateKey() {
 
     return getDateKey(
@@ -842,78 +853,38 @@ function getCreationDateKey() {
 
 
 /*
-    Se permite únicamente:
+    Solo permite:
 
-    - Hoy.
-    - Ayer.
-    - Nunca una fecha futura.
-    - Nunca una fecha anterior
-      a la creación de la aplicación.
+    - Hoy
+    - Ayer
+
+    Además nunca permite fechas anteriores
+    a la creación de la aplicación.
 */
+
 function isValidEntryDate(dateKey) {
 
     if (!dateKey) {
         return false;
     }
 
-    const today = parseDateKey(getTodayKey());
-
-    const yesterday = new Date(today);
-
-    yesterday.setDate(
-        yesterday.getDate() - 1
-    );
-
-    const selected =
-        parseDateKey(dateKey);
-
-    const created =
-        parseDateKey(
-            getCreationDateKey()
-        );
+    const minAllowed =
+        getCreationDateKey() > getYesterdayKey()
+            ? getCreationDateKey()
+            : getYesterdayKey();
 
     return (
-        selected >= created
+        dateKey >= minAllowed
         &&
-        selected >= yesterday
-        &&
-        selected <= today
+        dateKey <= getTodayKey()
     );
 
 }
 
 
-/*
-    Compatible con:
-
-    HH:MM
-    HH:MM:SS
-*/
 function createDateTime(dateKey, time) {
 
-    if (!dateKey || !time) {
-        return null;
-    }
-
-    const parts =
-        time.split(":").map(Number);
-
-    const hours = parts[0] || 0;
-    const minutes = parts[1] || 0;
-    const seconds = parts[2] || 0;
-
-    const [year, month, day] =
-        dateKey.split("-").map(Number);
-
-    return new Date(
-        year,
-        month - 1,
-        day,
-        hours,
-        minutes,
-        seconds,
-        0
-    );
+    return new Date(`${dateKey}T${time}:00`);
 
 }
 
@@ -969,7 +940,25 @@ function getOpenEntry() {
 }
 
 
+/*
+    Si existe startTimestamp se utiliza
+    para obtener el instante exacto de entrada.
+
+    Esto permite mantener los segundos.
+*/
+
 function getEntryStartDateTime(entry) {
+
+    if (entry.startTimestamp) {
+
+        const timestamp =
+            new Date(entry.startTimestamp);
+
+        if (!Number.isNaN(timestamp.getTime())) {
+            return timestamp;
+        }
+
+    }
 
     return createDateTime(
         entry.date,
@@ -979,13 +968,38 @@ function getEntryStartDateTime(entry) {
 }
 
 
+/*
+    Si existe endTimestamp se utiliza
+    el instante exacto de salida.
+
+    Esto evita el error de sumar 24 horas
+    cuando Entrada y Salida ocurren dentro
+    del mismo minuto.
+*/
+
 function getEntryEndDateTime(entry) {
 
     if (!entry.end) {
-
         return new Date();
+    }
+
+
+    if (entry.endTimestamp) {
+
+        const timestamp =
+            new Date(entry.endTimestamp);
+
+        if (!Number.isNaN(timestamp.getTime())) {
+            return timestamp;
+        }
 
     }
+
+
+    /*
+        Compatibilidad con fichajes antiguos
+        y fichajes manuales.
+    */
 
     const start =
         getEntryStartDateTime(entry);
@@ -997,21 +1011,14 @@ function getEntryEndDateTime(entry) {
         );
 
 
-    /*
-        Solo añadimos un día cuando
-        la salida es realmente anterior
-        a la entrada.
-
-        IMPORTANTE:
-        end === start NO suma 24 horas.
-    */
-    if (end < start) {
+    if (end <= start) {
 
         end.setDate(
             end.getDate() + 1
         );
 
     }
+
 
     return end;
 
@@ -1026,9 +1033,6 @@ function getGrossMinutes(entry) {
     const end =
         getEntryEndDateTime(entry);
 
-    if (!start || !end) {
-        return 0;
-    }
 
     return Math.max(
         0,
@@ -1046,9 +1050,8 @@ function getEffectiveMinutes(entry) {
         getGrossMinutes(entry);
 
     const adjustment =
-        Number(
-            entry.adjustmentMinutes || 0
-        );
+        Number(entry.adjustmentMinutes || 0);
+
 
     return Math.max(
         0,
@@ -1079,32 +1082,13 @@ function getDayMinutes(date) {
 }
 
 
-function getTotalMinutes(
-    entries = state.entries
-) {
+function getTotalMinutes(entries = state.entries) {
 
     return entries.reduce(
         (total, entry) =>
             total + getEffectiveMinutes(entry),
         0
     );
-
-}
-
-
-/* =========================
-   TIME DISPLAY HELPERS
-========================= */
-
-function formatEntryTime(time) {
-
-    if (!time) {
-        return "—";
-    }
-
-    return time.length >= 5
-        ? time.slice(0, 5)
-        : time;
 
 }
 
@@ -1152,6 +1136,13 @@ function formatDurationWithSeconds(seconds) {
         seconds % 60;
 
     return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+
+}
+
+
+function formatTime(time) {
+
+    return time || "—";
 
 }
 
@@ -1227,6 +1218,7 @@ function updateClock() {
             ? "en-GB"
             : "es-ES";
 
+
     document
         .getElementById("currentDate")
         .textContent =
@@ -1267,6 +1259,7 @@ function updateGreeting() {
 
     let greeting;
 
+
     if (state.settings.language === "en") {
 
         if (hour < 12) {
@@ -1289,6 +1282,7 @@ function updateGreeting() {
 
     }
 
+
     document
         .getElementById("dynamicGreeting")
         .textContent = greeting;
@@ -1306,7 +1300,9 @@ function clockIn() {
         return;
     }
 
+
     const now = new Date();
+
 
     const entry = {
 
@@ -1315,24 +1311,46 @@ function clockIn() {
                 ? crypto.randomUUID()
                 : String(Date.now()),
 
-        date: getDateKey(now),
+
+        date:
+            getDateKey(now),
+
 
         /*
-            Guardamos segundos reales.
-            Ejemplo: 10:30:45
+            Se mantiene HH:MM para mostrar
+            la hora en la interfaz.
         */
+
         start:
-            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+            `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+
+
+        /*
+            Guarda el instante exacto,
+            incluyendo segundos y milisegundos.
+        */
+
+        startTimestamp:
+            now.toISOString(),
+
 
         end: null,
 
+        endTimestamp: null,
+
+
         adjustmentMinutes: 0,
 
-        createdAt: now.toISOString(),
 
-        updatedAt: now.toISOString()
+        createdAt:
+            now.toISOString(),
+
+
+        updatedAt:
+            now.toISOString()
 
     };
+
 
     state.entries.push(entry);
 
@@ -1341,6 +1359,7 @@ function clockIn() {
     refreshApplication();
 
     startLiveTimer();
+
 
     showToast(
         t("clockInSuccess"),
@@ -1355,30 +1374,42 @@ function clockOut() {
     const entry =
         getOpenEntry();
 
+
     if (!entry) {
         return;
     }
 
+
     const now = new Date();
 
+
     /*
-        Guardamos segundos reales.
+        Hora visual.
     */
+
     entry.end =
-        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+
+    /*
+        Instante exacto de salida.
+        Esto evita el error de 24 horas.
+    */
+
+    entry.endTimestamp =
+        now.toISOString();
+
 
     entry.updatedAt =
         now.toISOString();
 
-    saveState();
 
-    refreshApplication();
+    saveState();
 
     stopLiveTimer();
 
-    document
-        .getElementById("liveCounter")
-        .textContent = "00:00:00";
+    refreshApplication();
+
 
     showToast(
         t("clockOutSuccess"),
@@ -1397,6 +1428,7 @@ function startLiveTimer() {
     stopLiveTimer();
 
     updateLiveTimer();
+
 
     timerInterval =
         setInterval(
@@ -1424,6 +1456,7 @@ function updateLiveTimer() {
 
     const entry =
         getOpenEntry();
+
 
     const counter =
         document.getElementById(
@@ -1456,15 +1489,14 @@ function updateLiveTimer() {
                     -
                     start.getTime()
                 )
-                / 1000
+                /
+                1000
             )
         );
 
 
     counter.textContent =
-        formatDurationWithSeconds(
-            seconds
-        );
+        formatDurationWithSeconds(seconds);
 
 
     updateWorkStatus();
@@ -1483,30 +1515,36 @@ function updateWorkStatus() {
     const entry =
         getOpenEntry();
 
+
     const title =
         document.getElementById(
             "workStatusTitle"
         );
+
 
     const text =
         document.getElementById(
             "workStatusText"
         );
 
+
     const indicator =
         document.getElementById(
             "workStatusIndicator"
         );
+
 
     const info =
         document.getElementById(
             "currentEntryInfo"
         );
 
+
     const clockInButton =
         document.getElementById(
             "clockInBtn"
         );
+
 
     const clockOutButton =
         document.getElementById(
@@ -1526,7 +1564,7 @@ function updateWorkStatus() {
             "work-status-indicator active";
 
         info.textContent =
-            `${t("openSession")}: ${formatEntryTime(entry.start)}`;
+            `${t("openSession")}: ${entry.start}`;
 
         clockInButton.disabled = true;
 
@@ -1573,8 +1611,10 @@ function updateDashboardStats() {
     const weekEnd =
         getWeekEnd(todayDate);
 
+
     const todayMinutes =
         getDayMinutes(today);
+
 
     let weekMinutes = 0;
 
@@ -1692,8 +1732,9 @@ function renderRecentEntries() {
 
             const end =
                 entry.end
-                    ? formatEntryTime(entry.end)
+                    ? entry.end
                     : "…";
+
 
             return `
                 <div class="recent-entry">
@@ -1709,7 +1750,7 @@ function renderRecentEntries() {
                         </strong>
 
                         <span>
-                            ${formatEntryTime(entry.start)} → ${end}
+                            ${entry.start} → ${end}
                         </span>
 
                     </div>
@@ -1742,8 +1783,10 @@ function getFilteredEntries() {
             )
             .value;
 
+
     const today =
         new Date();
+
 
     const todayKey =
         getTodayKey();
@@ -1808,6 +1851,7 @@ function getFilteredEntries() {
                     )
                     .value;
 
+
             const to =
                 document
                     .getElementById(
@@ -1826,6 +1870,7 @@ function getFilteredEntries() {
             }
 
         }
+
 
         return true;
 
@@ -1878,13 +1923,16 @@ function renderHistory() {
     const entries =
         getFilteredEntries();
 
+
     const container =
         document.getElementById(
             "historyContainer"
         );
 
+
     const grouped =
         groupEntriesByDate(entries);
+
 
     const dates =
         Object.keys(grouped)
@@ -1893,9 +1941,7 @@ function renderHistory() {
             );
 
 
-    updateHistorySummary(
-        grouped
-    );
+    updateHistorySummary(grouped);
 
 
     if (!dates.length) {
@@ -1918,6 +1964,7 @@ function renderHistory() {
 
             const dayEntries =
                 grouped[date];
+
 
             const dayMinutes =
                 dayEntries.reduce(
@@ -1966,31 +2013,21 @@ function renderHistory() {
                                     <div class="history-entry">
 
                                         <div class="history-entry-time">
-
-                                            ${formatEntryTime(entry.start)}
-
+                                            ${entry.start}
                                             <span>→</span>
-
-                                            ${
-                                                entry.end
-                                                    ? formatEntryTime(entry.end)
-                                                    : "…"
-                                            }
+                                            ${entry.end || "…"}
 
                                             ${
                                                 !entry.end
                                                     ? `<span>(${escapeHTML(t("active"))})</span>`
                                                     : ""
                                             }
-
                                         </div>
 
                                         <div class="history-entry-duration">
-
                                             ${formatDuration(
                                                 getEffectiveMinutes(entry)
                                             )}
-
                                         </div>
 
                                         <div class="history-entry-actions">
@@ -2037,6 +2074,7 @@ function updateHistorySummary(grouped) {
 
     const dates =
         Object.keys(grouped);
+
 
     const dayMinutes =
         dates
@@ -2126,11 +2164,20 @@ function openAddEntryModal() {
             "addDate"
         );
 
+
+    const minAllowed =
+        getCreationDateKey() > getYesterdayKey()
+            ? getCreationDateKey()
+            : getYesterdayKey();
+
+
     dateInput.min =
-        getCreationDateKey();
+        minAllowed;
+
 
     dateInput.max =
         getTodayKey();
+
 
     dateInput.value =
         getTodayKey();
@@ -2165,6 +2212,7 @@ function updateAddEntryInfo() {
                 "addDate"
             )
             .value;
+
 
     const box =
         document
@@ -2209,6 +2257,7 @@ function addManualEntry(event) {
 
     event.preventDefault();
 
+
     const date =
         document
             .getElementById(
@@ -2216,12 +2265,14 @@ function addManualEntry(event) {
             )
             .value;
 
+
     const start =
         document
             .getElementById(
                 "addStartTime"
             )
             .value;
+
 
     const end =
         document
@@ -2266,13 +2317,16 @@ function addManualEntry(event) {
                 ? crypto.randomUUID()
                 : String(Date.now()),
 
+
         date,
 
         start,
 
         end,
 
+
         adjustmentMinutes: 0,
+
 
         createdAt: now,
 
@@ -2286,6 +2340,7 @@ function addManualEntry(event) {
     closeModal("addEntryModal");
 
     refreshApplication();
+
 
     showToast(
         t("entryAdded"),
@@ -2323,6 +2378,7 @@ function openEditEntryModal() {
         select.innerHTML =
             `<option value="">${escapeHTML(t("noEntriesToEdit"))}</option>`;
 
+
         document
             .getElementById(
                 "editEntriesList"
@@ -2332,6 +2388,7 @@ function openEditEntryModal() {
                     <div class="empty-state-icon">✎</div>
                     <h3>${escapeHTML(t("noEntriesToEdit"))}</h3>
                 </div>`;
+
 
         openModal("editEntryModal");
 
@@ -2414,7 +2471,7 @@ function renderEditEntries() {
                                 id="edit-start-${entry.id}"
                                 class="form-control"
                                 type="time"
-                                value="${formatEntryTime(entry.start)}"
+                                value="${entry.start}"
                                 required
                             >
 
@@ -2431,7 +2488,7 @@ function renderEditEntries() {
                                 id="edit-end-${entry.id}"
                                 class="form-control"
                                 type="time"
-                                value="${entry.end ? formatEntryTime(entry.end) : ""}"
+                                value="${entry.end || ""}"
                                 ${entry.end ? "required" : ""}
                             >
 
@@ -2472,11 +2529,14 @@ function openEditEntryById(id) {
             item => item.id === id
         );
 
+
     if (!entry) {
         return;
     }
 
+
     openEditEntryModal();
+
 
     document
         .getElementById(
@@ -2484,6 +2544,7 @@ function openEditEntryById(id) {
         )
         .value =
             entry.date;
+
 
     renderEditEntries();
 
@@ -2494,10 +2555,12 @@ function saveEditedEntry(event, id) {
 
     event.preventDefault();
 
+
     const entry =
         state.entries.find(
             item => item.id === id
         );
+
 
     if (!entry) {
         return;
@@ -2536,6 +2599,20 @@ function saveEditedEntry(event, id) {
 
     entry.end = end || null;
 
+
+    /*
+        Al editar manualmente las horas,
+        eliminamos los timestamps antiguos.
+
+        Así el cálculo se basa exactamente
+        en las nuevas horas seleccionadas.
+    */
+
+    delete entry.startTimestamp;
+
+    delete entry.endTimestamp;
+
+
     entry.updatedAt =
         new Date().toISOString();
 
@@ -2545,6 +2622,7 @@ function saveEditedEntry(event, id) {
     refreshApplication();
 
     renderEditEntries();
+
 
     showToast(
         t("entryUpdated"),
@@ -2564,10 +2642,12 @@ function deleteEntry(id) {
         return;
     }
 
+
     state.entries =
         state.entries.filter(
             entry => entry.id !== id
         );
+
 
     saveState();
 
@@ -2576,6 +2656,7 @@ function deleteEntry(id) {
     renderEditEntries();
 
     closeModal("adjustTimeModal");
+
 
     showToast(
         t("entryDeleted"),
@@ -2705,7 +2786,7 @@ function updateAdjustEntries() {
         +
         entries.map(entry => `
             <option value="${entry.id}">
-                ${formatEntryTime(entry.start)} → ${entry.end ? formatEntryTime(entry.end) : "…"}
+                ${entry.start} → ${entry.end || "…"}
             </option>
         `)
         .join("");
@@ -2885,6 +2966,7 @@ function saveAdjustment(event) {
 
     refreshApplication();
 
+
     showToast(
         t("adjustmentSaved"),
         "success"
@@ -2918,6 +3000,7 @@ function getDailyData() {
                         getEffectiveMinutes(entry),
                     0
                 );
+
 
             return {
                 date,
@@ -3062,12 +3145,14 @@ function renderChart(data) {
             "hoursChart"
         );
 
+
     const period =
         document
             .getElementById(
                 "chartPeriod"
             )
             .value;
+
 
     const now =
         new Date();
@@ -3084,6 +3169,7 @@ function renderChart(data) {
 
         const end =
             getWeekEnd(now);
+
 
         filtered =
             filtered.filter(item => {
@@ -3229,11 +3315,9 @@ function renderBreakdown(data) {
                         </span>
 
                         <div class="breakdown-progress">
-
                             <span
                                 style="width:${percentage}%"
                             ></span>
-
                         </div>
 
                         <strong class="breakdown-hours">
@@ -3256,6 +3340,7 @@ function renderBreakdown(data) {
 function saveUsername(event) {
 
     event.preventDefault();
+
 
     const input =
         document
@@ -3282,6 +3367,7 @@ function saveUsername(event) {
     closeModal("usernameModal");
 
     refreshApplication();
+
 
     showToast(
         t("usernameUpdated"),
@@ -3346,6 +3432,7 @@ function toggleTheme() {
             ? "light"
             : "dark";
 
+
     saveState();
 
     applySettings();
@@ -3359,6 +3446,7 @@ function toggleLanguage() {
         state.settings.language === "es"
             ? "en"
             : "es";
+
 
     saveState();
 
@@ -3395,6 +3483,7 @@ function translatePage() {
             const key =
                 element.dataset.i18n;
 
+
             if (
                 translations[
                     state.settings.language
@@ -3420,6 +3509,7 @@ function updateProfile() {
     const username =
         state.settings.username
         || "Usuario";
+
 
     const initial =
         username.charAt(0)
@@ -3555,6 +3645,7 @@ function importData(event) {
     const file =
         event.target.files[0];
 
+
     if (!file) {
         return;
     }
@@ -3581,9 +3672,7 @@ function importData(event) {
                     imported.entries
                 )
             ) {
-
                 throw new Error();
-
             }
 
 
@@ -3601,6 +3690,7 @@ function importData(event) {
             applySettings();
 
             refreshApplication();
+
 
             showToast(
                 t("importSuccess"),
