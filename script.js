@@ -1322,7 +1322,8 @@ function clockIn() {
         */
 
         start:
-            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+            `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+
 
         /*
             Guarda el instante exacto,
@@ -1453,15 +1454,20 @@ function stopLiveTimer() {
 
 function updateLiveTimer() {
 
-    const entry = getOpenEntry();
+    const entry =
+        getOpenEntry();
+
 
     const counter =
-        document.getElementById("liveCounter");
+        document.getElementById(
+            "liveCounter"
+        );
 
 
     if (!entry) {
 
-        counter.textContent = "00:00:00";
+        counter.textContent =
+            "00:00:00";
 
         updateWorkStatus();
 
@@ -1474,20 +1480,23 @@ function updateLiveTimer() {
         getEntryStartDateTime(entry);
 
 
-    const elapsedSeconds =
-        Math.floor(
-            (Date.now() - start.getTime()) / 1000
+    const seconds =
+        Math.max(
+            0,
+            Math.floor(
+                (
+                    Date.now()
+                    -
+                    start.getTime()
+                )
+                /
+                1000
+            )
         );
-
-
-    const totalSeconds =
-        start.getSeconds() + elapsedSeconds;
 
 
     counter.textContent =
-        formatDurationWithSeconds(
-            totalSeconds
-        );
+        formatDurationWithSeconds(seconds);
 
 
     updateWorkStatus();
