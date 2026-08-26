@@ -1462,6 +1462,7 @@ function updateLiveTimer() {
             "liveCounter"
         );
 
+
     if (!entry) {
 
         counter.textContent =
@@ -1473,21 +1474,45 @@ function updateLiveTimer() {
 
     }
 
+
+    const start =
+        getEntryStartDateTime(entry);
+
+
     const now =
         new Date();
 
-    const seconds =
+
+    /*
+        Queremos mostrar:
+
+        Si entra a las 10:25:37
+        → 00:00:37
+
+        Después:
+        00:00:38
+        00:00:39
+        00:00:40
+        ...
+
+        Las horas y minutos SIEMPRE son 00.
+        Los segundos corresponden a los segundos
+        de la hora actual.
+    */
+
+    const currentSeconds =
         now.getSeconds();
 
+
     counter.textContent =
-        `00:00:${pad(seconds)}`;
+        `00:00:${pad(currentSeconds)}`;
+
 
     updateWorkStatus();
 
     updateDashboardStats();
 
 }
-
 
 /* =========================
    STATUS
