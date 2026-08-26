@@ -1484,28 +1484,63 @@ function updateLiveTimer() {
 
 
     /*
-        Queremos mostrar:
+        Calculamos los segundos desde las 00:00:00
+        de la hora en la que comenzó la sesión.
 
-        Si entra a las 10:25:37
-        → 00:00:37
+        Ejemplo:
+
+        Entrada: 22:11:12
+
+        Primer valor:
+        00:00:12
 
         Después:
-        00:00:38
-        00:00:39
-        00:00:40
+        00:00:13
+        00:00:14
         ...
-
-        Las horas y minutos SIEMPRE son 00.
-        Los segundos corresponden a los segundos
-        de la hora actual.
+        00:00:59
+        00:01:00
+        00:01:01
     */
 
+    const startSeconds =
+        start.getHours() * 3600
+        +
+        start.getMinutes() * 60
+        +
+        start.getSeconds();
+
+
     const currentSeconds =
+        now.getHours() * 3600
+        +
+        now.getMinutes() * 60
+        +
         now.getSeconds();
 
 
+    let totalSeconds =
+        currentSeconds
+        -
+        startSeconds;
+
+
+    /*
+        Si por alguna razón la sesión
+        cruza medianoche.
+    */
+
+    if (totalSeconds < 0) {
+
+        totalSeconds += 24 * 3600;
+
+    }
+
+
     counter.textContent =
-        `00:00:${pad(currentSeconds)}`;
+        formatDurationWithSeconds(
+            totalSeconds
+        );
 
 
     updateWorkStatus();
