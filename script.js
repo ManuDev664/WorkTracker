@@ -895,22 +895,25 @@ function createDateTime(dateKey, time) {
         return null;
     }
 
-    const parts = time.split(":");
+    const parts =
+        time.split(":").map(Number);
 
-    const hours = Number(parts[0]) || 0;
-    const minutes = Number(parts[1]) || 0;
-    const seconds = Number(parts[2]) || 0;
+    const hours = parts[0] || 0;
+    const minutes = parts[1] || 0;
+    const seconds = parts[2] || 0;
 
-    const date = parseDateKey(dateKey);
+    const [year, month, day] =
+        dateKey.split("-").map(Number);
 
-    date.setHours(
+    return new Date(
+        year,
+        month - 1,
+        day,
         hours,
         minutes,
         seconds,
         0
     );
-
-    return date;
 
 }
 
@@ -1099,7 +1102,9 @@ function formatEntryTime(time) {
         return "—";
     }
 
-    return time.slice(0, 5);
+    return time.length >= 5
+        ? time.slice(0, 5)
+        : time;
 
 }
 
@@ -1312,8 +1317,12 @@ function clockIn() {
 
         date: getDateKey(now),
 
+        /*
+            Guardamos segundos reales.
+            Ejemplo: 10:30:45
+        */
         start:
-            `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
 
         end: null,
 
@@ -1352,6 +1361,9 @@ function clockOut() {
 
     const now = new Date();
 
+    /*
+        Guardamos segundos reales.
+    */
     entry.end =
         `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
@@ -1363,6 +1375,10 @@ function clockOut() {
     refreshApplication();
 
     stopLiveTimer();
+
+    document
+        .getElementById("liveCounter")
+        .textContent = "00:00:00";
 
     showToast(
         t("clockOutSuccess"),
@@ -1414,6 +1430,7 @@ function updateLiveTimer() {
             "liveCounter"
         );
 
+
     if (!entry) {
 
         counter.textContent =
@@ -1425,33 +1442,30 @@ function updateLiveTimer() {
 
     }
 
-    const now = new Date();
 
     const start =
         getEntryStartDateTime(entry);
 
-    const startMinute =
-        new Date(start);
-
-    startMinute.setSeconds(
-        0,
-        0
-    );
 
     const seconds =
-        Math.round(
-            (
-                now.getTime()
-                -
-                startMinute.getTime()
+        Math.max(
+            0,
+            Math.floor(
+                (
+                    Date.now()
+                    -
+                    start.getTime()
+                )
+                / 1000
             )
-            / 1000
         );
+
 
     counter.textContent =
         formatDurationWithSeconds(
-            Math.max(0, seconds)
+            seconds
         );
+
 
     updateWorkStatus();
 
