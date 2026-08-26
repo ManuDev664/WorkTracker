@@ -1322,8 +1322,7 @@ function clockIn() {
         */
 
         start:
-            `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-
+            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
 
         /*
             Guarda el instante exacto,
@@ -1454,8 +1453,7 @@ function stopLiveTimer() {
 
 function updateLiveTimer() {
 
-    const entry =
-        getOpenEntry();
+    const entry = getOpenEntry();
 
     const counter =
         document.getElementById("liveCounter");
@@ -1476,43 +1474,14 @@ function updateLiveTimer() {
         getEntryStartDateTime(entry);
 
 
-    /*
-        Tiempo que ha pasado desde que pulsó Entrada.
-    */
-
     const elapsedSeconds =
-        Math.max(
-            0,
-            Math.floor(
-                (Date.now() - start.getTime()) / 1000
-            )
+        Math.floor(
+            (Date.now() - start.getTime()) / 1000
         );
 
 
-    /*
-        Cogemos los segundos que tenía el reloj
-        en el momento exacto de Entrada.
-
-        Ejemplo:
-
-        Entrada a 22:11:09
-        start.getSeconds() = 9
-
-        A los 3 segundos:
-
-        9 + 3 = 12
-
-        Por tanto:
-
-        00:00:12
-    */
-
-    const initialSeconds =
-        start.getSeconds();
-
-
     const totalSeconds =
-        initialSeconds + elapsedSeconds;
+        start.getSeconds() + elapsedSeconds;
 
 
     counter.textContent =
@@ -1526,6 +1495,7 @@ function updateLiveTimer() {
     updateDashboardStats();
 
 }
+
 
 /* =========================
    STATUS
