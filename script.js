@@ -1458,15 +1458,12 @@ function updateLiveTimer() {
         getOpenEntry();
 
     const counter =
-        document.getElementById(
-            "liveCounter"
-        );
+        document.getElementById("liveCounter");
 
 
     if (!entry) {
 
-        counter.textContent =
-            "00:00:00";
+        counter.textContent = "00:00:00";
 
         updateWorkStatus();
 
@@ -1479,62 +1476,43 @@ function updateLiveTimer() {
         getEntryStartDateTime(entry);
 
 
-    const now =
-        new Date();
+    /*
+        Tiempo que ha pasado desde que pulsó Entrada.
+    */
+
+    const elapsedSeconds =
+        Math.max(
+            0,
+            Math.floor(
+                (Date.now() - start.getTime()) / 1000
+            )
+        );
 
 
     /*
-        Calculamos los segundos desde las 00:00:00
-        de la hora en la que comenzó la sesión.
+        Cogemos los segundos que tenía el reloj
+        en el momento exacto de Entrada.
 
         Ejemplo:
 
-        Entrada: 22:11:12
+        Entrada a 22:11:09
+        start.getSeconds() = 9
 
-        Primer valor:
+        A los 3 segundos:
+
+        9 + 3 = 12
+
+        Por tanto:
+
         00:00:12
-
-        Después:
-        00:00:13
-        00:00:14
-        ...
-        00:00:59
-        00:01:00
-        00:01:01
     */
 
-    const startSeconds =
-        start.getHours() * 3600
-        +
-        start.getMinutes() * 60
-        +
+    const initialSeconds =
         start.getSeconds();
 
 
-    const currentSeconds =
-        now.getHours() * 3600
-        +
-        now.getMinutes() * 60
-        +
-        now.getSeconds();
-
-
-    let totalSeconds =
-        currentSeconds
-        -
-        startSeconds;
-
-
-    /*
-        Si por alguna razón la sesión
-        cruza medianoche.
-    */
-
-    if (totalSeconds < 0) {
-
-        totalSeconds += 24 * 3600;
-
-    }
+    const totalSeconds =
+        initialSeconds + elapsedSeconds;
 
 
     counter.textContent =
