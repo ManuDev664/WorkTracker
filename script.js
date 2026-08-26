@@ -359,17 +359,18 @@ const translations = {
 };
 
 
-/* =========================================================
+/* =========================
    STATE
-========================================================= */
+========================= */
 
 let state = null;
+
 let timerInterval = null;
 
 
-/* =========================================================
+/* =========================
    INITIALIZATION
-========================================================= */
+========================= */
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -397,9 +398,9 @@ function init() {
 }
 
 
-/* =========================================================
+/* =========================
    STORAGE
-========================================================= */
+========================= */
 
 function getDefaultState() {
 
@@ -430,24 +431,18 @@ function loadState() {
 
     try {
 
-        const saved =
-            localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE_KEY);
 
-        state =
-            saved
-                ? JSON.parse(saved)
-                : getDefaultState();
-
+        state = saved
+            ? JSON.parse(saved)
+            : getDefaultState();
 
         state.settings ||= {};
         state.entries ||= [];
 
-
         state.settings.language ||= "es";
         state.settings.theme ||= "dark";
-        state.settings.createdAt ||=
-            new Date().toISOString();
-
+        state.settings.createdAt ||= new Date().toISOString();
 
     } catch (error) {
 
@@ -470,9 +465,9 @@ function saveState() {
 }
 
 
-/* =========================================================
+/* =========================
    EVENTS
-========================================================= */
+========================= */
 
 function bindEvents() {
 
@@ -480,16 +475,11 @@ function bindEvents() {
         .querySelectorAll(".nav-item")
         .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+            button.addEventListener("click", () => {
 
-                    showSection(
-                        button.dataset.section
-                    );
+                showSection(button.dataset.section);
 
-                }
-            );
+            });
 
         });
 
@@ -518,309 +508,210 @@ function bindEvents() {
 
     document
         .getElementById("clockInBtn")
-        .addEventListener(
-            "click",
-            clockIn
-        );
+        .addEventListener("click", clockIn);
 
 
     document
         .getElementById("clockOutBtn")
-        .addEventListener(
-            "click",
-            clockOut
-        );
+        .addEventListener("click", clockOut);
 
 
     document
         .getElementById("themeToggleBtn")
-        .addEventListener(
-            "click",
-            toggleTheme
-        );
+        .addEventListener("click", toggleTheme);
 
 
     document
         .getElementById("darkModeSwitch")
-        .addEventListener(
-            "change",
-            event => {
+        .addEventListener("change", event => {
 
-                state.settings.theme =
-                    event.target.checked
-                        ? "dark"
-                        : "light";
+            state.settings.theme =
+                event.target.checked
+                    ? "dark"
+                    : "light";
 
-                saveState();
+            saveState();
 
-                applySettings();
+            applySettings();
 
-            }
-        );
+        });
 
 
     document
         .getElementById("languageToggleBtn")
-        .addEventListener(
-            "click",
-            toggleLanguage
-        );
+        .addEventListener("click", toggleLanguage);
 
 
     document
         .getElementById("settingsLanguage")
-        .addEventListener(
-            "change",
-            event => {
+        .addEventListener("change", event => {
 
-                state.settings.language =
-                    event.target.value;
+            state.settings.language = event.target.value;
 
-                saveState();
+            saveState();
 
-                refreshApplication();
+            refreshApplication();
 
-            }
-        );
+        });
 
 
     document
         .getElementById("topbarAvatar")
-        .addEventListener(
-            "click",
-            () => {
+        .addEventListener("click", () => {
 
-                showSection("settings");
+            showSection("settings");
 
-            }
-        );
+        });
 
 
     document
         .getElementById("openAddEntryBtn")
-        .addEventListener(
-            "click",
-            openAddEntryModal
-        );
+        .addEventListener("click", openAddEntryModal);
 
 
     document
         .getElementById("historyAddBtn")
-        .addEventListener(
-            "click",
-            openAddEntryModal
-        );
+        .addEventListener("click", openAddEntryModal);
 
 
     document
         .getElementById("openEditEntryBtn")
-        .addEventListener(
-            "click",
-            openEditEntryModal
-        );
+        .addEventListener("click", openEditEntryModal);
 
 
     document
         .getElementById("openAdjustTimeBtn")
-        .addEventListener(
-            "click",
-            openAdjustTimeModal
-        );
+        .addEventListener("click", openAdjustTimeModal);
 
 
     document
         .getElementById("viewAllHistoryBtn")
-        .addEventListener(
-            "click",
-            () => {
+        .addEventListener("click", () => {
 
-                showSection("history");
+            showSection("history");
 
-            }
-        );
+        });
 
 
     document
         .getElementById("changeUsernameBtn")
-        .addEventListener(
-            "click",
-            () => {
+        .addEventListener("click", () => {
 
-                document
-                    .getElementById("usernameInput")
-                    .value =
-                    state.settings.username;
+            document
+                .getElementById("usernameInput")
+                .value = state.settings.username;
 
-                openModal("usernameModal");
+            openModal("usernameModal");
 
-            }
-        );
+        });
 
 
     document
         .getElementById("usernameForm")
-        .addEventListener(
-            "submit",
-            saveUsername
-        );
+        .addEventListener("submit", saveUsername);
 
 
     document
         .getElementById("addEntryForm")
-        .addEventListener(
-            "submit",
-            addManualEntry
-        );
+        .addEventListener("submit", addManualEntry);
 
 
     document
         .getElementById("adjustTimeForm")
-        .addEventListener(
-            "submit",
-            saveAdjustment
-        );
+        .addEventListener("submit", saveAdjustment);
 
 
     document
         .getElementById("historyPeriodFilter")
-        .addEventListener(
-            "change",
-            event => {
+        .addEventListener("change", event => {
 
-                const custom =
-                    event.target.value === "custom";
+            const custom =
+                event.target.value === "custom";
 
-                document
-                    .getElementById(
-                        "historyCustomDates"
-                    )
-                    .classList.toggle(
-                        "hidden",
-                        !custom
-                    );
+            document
+                .getElementById("historyCustomDates")
+                .classList.toggle("hidden", !custom);
 
-                renderHistory();
+            renderHistory();
 
-            }
-        );
+        });
 
 
     document
         .getElementById("historyFromDate")
-        .addEventListener(
-            "change",
-            renderHistory
-        );
+        .addEventListener("change", renderHistory);
 
 
     document
         .getElementById("historyToDate")
-        .addEventListener(
-            "change",
-            renderHistory
-        );
+        .addEventListener("change", renderHistory);
 
 
     document
         .getElementById("clearHistoryFilterBtn")
-        .addEventListener(
-            "click",
-            clearHistoryFilter
-        );
+        .addEventListener("click", clearHistoryFilter);
 
 
     document
         .getElementById("chartPeriod")
-        .addEventListener(
-            "change",
-            renderStatistics
-        );
+        .addEventListener("change", renderStatistics);
 
 
     document
         .getElementById("editDate")
-        .addEventListener(
-            "change",
-            renderEditEntries
-        );
+        .addEventListener("change", renderEditEntries);
 
 
     document
         .getElementById("adjustDate")
-        .addEventListener(
-            "change",
-            updateAdjustEntries
-        );
+        .addEventListener("change", updateAdjustEntries);
 
 
     document
         .getElementById("adjustEntryId")
-        .addEventListener(
-            "change",
-            updateAdjustInfo
-        );
+        .addEventListener("change", updateAdjustInfo);
 
 
     document
         .getElementById("addDate")
-        .addEventListener(
-            "change",
-            updateAddEntryInfo
-        );
+        .addEventListener("change", updateAddEntryInfo);
 
 
     document
         .getElementById("exportDataBtn")
-        .addEventListener(
-            "click",
-            exportData
-        );
+        .addEventListener("click", exportData);
 
 
     document
         .getElementById("importDataBtn")
-        .addEventListener(
-            "click",
-            () => {
+        .addEventListener("click", () => {
 
-                document
-                    .getElementById("importDataInput")
-                    .click();
+            document
+                .getElementById("importDataInput")
+                .click();
 
-            }
-        );
+        });
 
 
     document
         .getElementById("importDataInput")
-        .addEventListener(
-            "change",
-            importData
-        );
+        .addEventListener("change", importData);
 
 
     document
         .getElementById("resetDataBtn")
-        .addEventListener(
-            "click",
-            resetApplication
-        );
+        .addEventListener("click", resetApplication);
 
 
     document
         .querySelectorAll("[data-close-modal]")
         .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+            button.addEventListener("click", () => {
 
-                    closeModal(
-                        button.dataset.closeModal
-                    );
+                closeModal(button.dataset.closeModal);
 
-                }
-            );
+            });
 
         });
 
@@ -829,31 +720,24 @@ function bindEvents() {
         .querySelectorAll(".modal-overlay")
         .forEach(overlay => {
 
-            overlay.addEventListener(
-                "click",
-                event => {
+            overlay.addEventListener("click", event => {
 
-                    if (
-                        event.target === overlay
-                    ) {
+                if (event.target === overlay) {
 
-                        closeModal(
-                            overlay.id
-                        );
-
-                    }
+                    closeModal(overlay.id);
 
                 }
-            );
+
+            });
 
         });
 
 }
 
 
-/* =========================================================
+/* =========================
    NAVIGATION
-========================================================= */
+========================= */
 
 function showSection(section) {
 
@@ -898,9 +782,9 @@ function showSection(section) {
 }
 
 
-/* =========================================================
+/* =========================
    DATE HELPERS
-========================================================= */
+========================= */
 
 function pad(number) {
 
@@ -913,11 +797,9 @@ function getDateKey(date = new Date()) {
 
     const year = date.getFullYear();
 
-    const month =
-        pad(date.getMonth() + 1);
+    const month = pad(date.getMonth() + 1);
 
-    const day =
-        pad(date.getDate());
+    const day = pad(date.getDate());
 
     return `${year}-${month}-${day}`;
 
@@ -964,13 +846,21 @@ function getYesterdayKey() {
 function getCreationDateKey() {
 
     return getDateKey(
-        new Date(
-            state.settings.createdAt
-        )
+        new Date(state.settings.createdAt)
     );
 
 }
 
+
+/*
+    Solo permite:
+
+    - Hoy
+    - Ayer
+
+    Además nunca permite fechas anteriores
+    a la creación de la aplicación.
+*/
 
 function isValidEntryDate(dateKey) {
 
@@ -978,15 +868,14 @@ function isValidEntryDate(dateKey) {
         return false;
     }
 
-
     const minAllowed =
         getCreationDateKey() > getYesterdayKey()
             ? getCreationDateKey()
             : getYesterdayKey();
 
-
     return (
-        dateKey >= minAllowed &&
+        dateKey >= minAllowed
+        &&
         dateKey <= getTodayKey()
     );
 
@@ -995,9 +884,7 @@ function isValidEntryDate(dateKey) {
 
 function createDateTime(dateKey, time) {
 
-    return new Date(
-        `${dateKey}T${time}:00`
-    );
+    return new Date(`${dateKey}T${time}:00`);
 
 }
 
@@ -1006,22 +893,14 @@ function getWeekStart(date = new Date()) {
 
     const result = new Date(date);
 
-    result.setHours(
-        0,
-        0,
-        0,
-        0
-    );
-
+    result.setHours(0, 0, 0, 0);
 
     const day =
         result.getDay() || 7;
 
-
     result.setDate(
         result.getDate() - day + 1
     );
-
 
     return result;
 
@@ -1030,14 +909,11 @@ function getWeekStart(date = new Date()) {
 
 function getWeekEnd(date = new Date()) {
 
-    const result =
-        getWeekStart(date);
-
+    const result = getWeekStart(date);
 
     result.setDate(
         result.getDate() + 6
     );
-
 
     result.setHours(
         23,
@@ -1046,15 +922,14 @@ function getWeekEnd(date = new Date()) {
         999
     );
 
-
     return result;
 
 }
 
 
-/* =========================================================
+/* =========================
    ENTRY HELPERS
-========================================================= */
+========================= */
 
 function getOpenEntry() {
 
@@ -1066,21 +941,10 @@ function getOpenEntry() {
 
 
 /*
-    IMPORTANTE:
+    Si existe startTimestamp se utiliza
+    para obtener el instante exacto de entrada.
 
-    Para los fichajes nuevos utilizamos siempre
-    startTimestamp.
-
-    Esto evita que:
-
-    21:33:43 → 21:33:50
-
-    se interprete como:
-
-    21:33 → 21:33
-
-    y luego se convierta accidentalmente
-    en 24 horas.
+    Esto permite mantener los segundos.
 */
 
 function getEntryStartDateTime(entry) {
@@ -1088,23 +952,13 @@ function getEntryStartDateTime(entry) {
     if (entry.startTimestamp) {
 
         const timestamp =
-            new Date(
-                entry.startTimestamp
-            );
+            new Date(entry.startTimestamp);
 
-
-        if (
-            !Number.isNaN(
-                timestamp.getTime()
-            )
-        ) {
-
+        if (!Number.isNaN(timestamp.getTime())) {
             return timestamp;
-
         }
 
     }
-
 
     return createDateTime(
         entry.date,
@@ -1114,57 +968,41 @@ function getEntryStartDateTime(entry) {
 }
 
 
+/*
+    Si existe endTimestamp se utiliza
+    el instante exacto de salida.
+
+    Esto evita el error de sumar 24 horas
+    cuando Entrada y Salida ocurren dentro
+    del mismo minuto.
+*/
+
 function getEntryEndDateTime(entry) {
 
     if (!entry.end) {
-
         return new Date();
-
     }
 
 
     if (entry.endTimestamp) {
 
         const timestamp =
-            new Date(
-                entry.endTimestamp
-            );
+            new Date(entry.endTimestamp);
 
-
-        if (
-            !Number.isNaN(
-                timestamp.getTime()
-            )
-        ) {
-
+        if (!Number.isNaN(timestamp.getTime())) {
             return timestamp;
-
         }
 
     }
 
 
     /*
-        Fichajes antiguos o manuales.
-
-        Como no tenemos segundos, calculamos
-        con HH:MM.
-
-        Si la salida es menor que la entrada,
-        significa que ha cruzado medianoche.
-
-        Pero si son exactamente la misma hora,
-        NO asumimos automáticamente 24 horas.
-
-        En ese caso lo tratamos como 0 minutos.
+        Compatibilidad con fichajes antiguos
+        y fichajes manuales.
     */
 
     const start =
-        createDateTime(
-            entry.date,
-            entry.start
-        );
-
+        getEntryStartDateTime(entry);
 
     const end =
         createDateTime(
@@ -1173,7 +1011,7 @@ function getEntryEndDateTime(entry) {
         );
 
 
-    if (end < start) {
+    if (end <= start) {
 
         end.setDate(
             end.getDate() + 1
@@ -1187,11 +1025,10 @@ function getEntryEndDateTime(entry) {
 }
 
 
-function getGrossSeconds(entry) {
+function getGrossMinutes(entry) {
 
     const start =
         getEntryStartDateTime(entry);
-
 
     const end =
         getEntryEndDateTime(entry);
@@ -1200,21 +1037,8 @@ function getGrossSeconds(entry) {
     return Math.max(
         0,
         Math.floor(
-            (
-                end.getTime()
-                -
-                start.getTime()
-            ) / 1000
+            (end - start) / 60000
         )
-    );
-
-}
-
-
-function getGrossMinutes(entry) {
-
-    return Math.floor(
-        getGrossSeconds(entry) / 60
     );
 
 }
@@ -1222,26 +1046,16 @@ function getGrossMinutes(entry) {
 
 function getEffectiveMinutes(entry) {
 
-    const grossSeconds =
-        getGrossSeconds(entry);
-
+    const gross =
+        getGrossMinutes(entry);
 
     const adjustment =
-        Number(
-            entry.adjustmentMinutes || 0
-        );
+        Number(entry.adjustmentMinutes || 0);
 
 
-    const effectiveSeconds =
-        Math.max(
-            0,
-            grossSeconds +
-            adjustment * 60
-        );
-
-
-    return Math.floor(
-        effectiveSeconds / 60
+    return Math.max(
+        0,
+        gross + adjustment
     );
 
 }
@@ -1250,8 +1064,7 @@ function getEffectiveMinutes(entry) {
 function getEntriesForDate(date) {
 
     return state.entries.filter(
-        entry =>
-            entry.date === date
+        entry => entry.date === date
     );
 
 }
@@ -1262,31 +1075,27 @@ function getDayMinutes(date) {
     return getEntriesForDate(date)
         .reduce(
             (total, entry) =>
-                total +
-                getEffectiveMinutes(entry),
+                total + getEffectiveMinutes(entry),
             0
         );
 
 }
 
 
-function getTotalMinutes(
-    entries = state.entries
-) {
+function getTotalMinutes(entries = state.entries) {
 
     return entries.reduce(
         (total, entry) =>
-            total +
-            getEffectiveMinutes(entry),
+            total + getEffectiveMinutes(entry),
         0
     );
 
 }
 
 
-/* =========================================================
+/* =========================
    FORMATTING
-========================================================= */
+========================= */
 
 function formatDuration(minutes) {
 
@@ -1296,49 +1105,13 @@ function formatDuration(minutes) {
             Math.floor(minutes || 0)
         );
 
-
     const hours =
-        Math.floor(
-            safeMinutes / 60
-        );
-
+        Math.floor(safeMinutes / 60);
 
     const mins =
         safeMinutes % 60;
 
-
     return `${hours}h ${pad(mins)}m`;
-
-}
-
-
-/*
-    Este es el contador de la sesión.
-
-    Ejemplo:
-
-    Reloj: 21:33:43
-    Contador: 00:00:43
-
-    Reloj: 21:33:44
-    Contador: 00:00:44
-
-    Reloj: 21:33:59
-    Contador: 00:00:59
-
-    Reloj: 21:34:00
-    Contador: 00:01:00
-
-    Es decir, utiliza los segundos REALES
-    del reloj.
-*/
-
-function formatClockSeconds(date = new Date()) {
-
-    const seconds =
-        date.getSeconds();
-
-    return `00:00:${pad(seconds)}`;
 
 }
 
@@ -1351,22 +1124,16 @@ function formatDurationWithSeconds(seconds) {
             Math.floor(seconds)
         );
 
-
     const hours =
-        Math.floor(
-            seconds / 3600
-        );
-
+        Math.floor(seconds / 3600);
 
     const minutes =
         Math.floor(
             (seconds % 3600) / 60
         );
 
-
     const secs =
         seconds % 60;
-
 
     return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
 
@@ -1386,7 +1153,6 @@ function formatDate(dateKey) {
         state.settings.language === "en"
             ? "en-GB"
             : "es-ES";
-
 
     return parseDateKey(dateKey)
         .toLocaleDateString(
@@ -1408,7 +1174,6 @@ function formatShortDate(dateKey) {
             ? "en-GB"
             : "es-ES";
 
-
     return parseDateKey(dateKey)
         .toLocaleDateString(
             locale,
@@ -1428,29 +1193,25 @@ function formatAdjustment(minutes) {
         return "0m";
     }
 
-
     const sign =
         minutes > 0
             ? "+"
             : "−";
 
-
-    return sign +
-        formatDuration(
-            Math.abs(minutes)
-        );
+    return sign + formatDuration(
+        Math.abs(minutes)
+    );
 
 }
 
 
-/* =========================================================
+/* =========================
    CLOCK
-========================================================= */
+========================= */
 
 function updateClock() {
 
     const now = new Date();
-
 
     const locale =
         state.settings.language === "en"
@@ -1484,56 +1245,38 @@ function updateClock() {
                 }
             );
 
-
-    /*
-        Actualizamos también el contador
-        inmediatamente con el segundo real.
-    */
-
-    if (getOpenEntry()) {
-        updateLiveTimer();
-    }
-
 }
 
 
-/* =========================================================
+/* =========================
    GREETING
-========================================================= */
+========================= */
 
 function updateGreeting() {
 
     const hour =
         new Date().getHours();
 
-
     let greeting;
 
 
-    if (
-        state.settings.language === "en"
-    ) {
+    if (state.settings.language === "en") {
 
         if (hour < 12) {
             greeting = "Good morning";
-        }
-        else if (hour < 19) {
+        } else if (hour < 19) {
             greeting = "Good afternoon";
-        }
-        else {
+        } else {
             greeting = "Good evening";
         }
 
-    }
-    else {
+    } else {
 
         if (hour < 12) {
             greeting = "Buenos días";
-        }
-        else if (hour < 20) {
+        } else if (hour < 20) {
             greeting = "Buenas tardes";
-        }
-        else {
+        } else {
             greeting = "Buenas noches";
         }
 
@@ -1541,18 +1284,15 @@ function updateGreeting() {
 
 
     document
-        .getElementById(
-            "dynamicGreeting"
-        )
-        .textContent =
-            greeting;
+        .getElementById("dynamicGreeting")
+        .textContent = greeting;
 
 }
 
 
-/* =========================================================
-   CLOCK IN
-========================================================= */
+/* =========================
+   CLOCK IN / OUT
+========================= */
 
 function clockIn() {
 
@@ -1561,55 +1301,50 @@ function clockIn() {
     }
 
 
-    const now =
-        new Date();
-
-
-    const id =
-        typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
-            ? crypto.randomUUID()
-            : String(
-                Date.now()
-            );
+    const now = new Date();
 
 
     const entry = {
 
-        id,
+        id:
+            crypto.randomUUID
+                ? crypto.randomUUID()
+                : String(Date.now()),
+
 
         date:
             getDateKey(now),
 
+
         /*
-            Hora visible.
+            Se mantiene HH:MM para mostrar
+            la hora en la interfaz.
         */
 
         start:
             `${pad(now.getHours())}:${pad(now.getMinutes())}`,
 
+
         /*
-            Instante REAL exacto.
-
-            Ejemplo:
-
-            2026-08-26T19:33:43.742Z
+            Guarda el instante exacto,
+            incluyendo segundos y milisegundos.
         */
 
         startTimestamp:
             now.toISOString(),
 
-        end:
-            null,
 
-        endTimestamp:
-            null,
+        end: null,
 
-        adjustmentMinutes:
-            0,
+        endTimestamp: null,
+
+
+        adjustmentMinutes: 0,
+
 
         createdAt:
             now.toISOString(),
+
 
         updatedAt:
             now.toISOString()
@@ -1617,17 +1352,9 @@ function clockIn() {
     };
 
 
-    state.entries.push(
-        entry
-    );
-
+    state.entries.push(entry);
 
     saveState();
-
-
-    /*
-        Actualizamos inmediatamente el contador.
-    */
 
     refreshApplication();
 
@@ -1642,10 +1369,6 @@ function clockIn() {
 }
 
 
-/* =========================================================
-   CLOCK OUT
-========================================================= */
-
 function clockOut() {
 
     const entry =
@@ -1657,16 +1380,20 @@ function clockOut() {
     }
 
 
-    const now =
-        new Date();
+    const now = new Date();
 
+
+    /*
+        Hora visual.
+    */
 
     entry.end =
         `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
 
     /*
-        Guardamos el instante exacto de salida.
+        Instante exacto de salida.
+        Esto evita el error de 24 horas.
     */
 
     entry.endTimestamp =
@@ -1679,9 +1406,7 @@ function clockOut() {
 
     saveState();
 
-
     stopLiveTimer();
-
 
     refreshApplication();
 
@@ -1694,18 +1419,13 @@ function clockOut() {
 }
 
 
-/* =========================================================
+/* =========================
    LIVE TIMER
-========================================================= */
+========================= */
 
 function startLiveTimer() {
 
     stopLiveTimer();
-
-
-    /*
-        Primera actualización inmediata.
-    */
 
     updateLiveTimer();
 
@@ -1713,7 +1433,7 @@ function startLiveTimer() {
     timerInterval =
         setInterval(
             updateLiveTimer,
-            250
+            1000
         );
 
 }
@@ -1723,9 +1443,7 @@ function stopLiveTimer() {
 
     if (timerInterval) {
 
-        clearInterval(
-            timerInterval
-        );
+        clearInterval(timerInterval);
 
         timerInterval = null;
 
@@ -1733,22 +1451,6 @@ function stopLiveTimer() {
 
 }
 
-
-/*
-    AQUÍ ESTÁ EL CAMBIO PRINCIPAL.
-
-    El contador se sincroniza con los segundos
-    reales del reloj del sistema.
-
-    21:33:43 -> 00:33:43
-    21:33:44 -> 00:33:44
-    21:33:45 -> 00:33:45
-
-    Si prefieres que los minutos también sean
-    el tiempo transcurrido de la sesión,
-    puedes cambiar esta función por la versión
-    de tiempo transcurrido.
-*/
 
 function updateLiveTimer() {
 
@@ -1762,16 +1464,10 @@ function updateLiveTimer() {
         );
 
 
-    if (!counter) {
-        return;
-    }
-
-
     if (!entry) {
 
         counter.textContent =
             "00:00:00";
-
 
         updateWorkStatus();
 
@@ -1780,25 +1476,27 @@ function updateLiveTimer() {
     }
 
 
-    const now =
-        new Date();
+    const start =
+        getEntryStartDateTime(entry);
 
 
-    /*
-        Queremos los segundos reales
-        del reloj.
+    const seconds =
+        Math.max(
+            0,
+            Math.floor(
+                (
+                    Date.now()
+                    -
+                    start.getTime()
+                )
+                /
+                1000
+            )
+        );
 
-        Ejemplo:
-
-        21:33:43
-
-        muestra:
-
-        00:33:43
-    */
 
     counter.textContent =
-        formatClockSeconds(now);
+        formatDurationWithSeconds(seconds);
 
 
     updateWorkStatus();
@@ -1808,9 +1506,9 @@ function updateLiveTimer() {
 }
 
 
-/* =========================================================
+/* =========================
    STATUS
-========================================================= */
+========================= */
 
 function updateWorkStatus() {
 
@@ -1859,155 +1557,121 @@ function updateWorkStatus() {
         title.textContent =
             t("working");
 
-
         text.textContent =
             t("active");
-
 
         indicator.className =
             "work-status-indicator active";
 
-
         info.textContent =
             `${t("openSession")}: ${entry.start}`;
 
+        clockInButton.disabled = true;
 
-        clockInButton.disabled =
-            true;
+        clockOutButton.disabled = false;
 
-
-        clockOutButton.disabled =
-            false;
-
-    }
-    else {
+    } else {
 
         title.textContent =
             t("notWorking");
 
-
         text.textContent =
             t("inactive");
-
 
         indicator.className =
             "work-status-indicator inactive";
 
-
         info.textContent =
             t("notStarted");
 
+        clockInButton.disabled = false;
 
-        clockInButton.disabled =
-            false;
-
-
-        clockOutButton.disabled =
-            true;
+        clockOutButton.disabled = true;
 
     }
 
 }
 
 
-/* =========================================================
+/* =========================
    DASHBOARD
-========================================================= */
+========================= */
 
 function updateDashboardStats() {
 
     const today =
         getTodayKey();
 
-
     const todayDate =
         new Date();
 
-
     const weekStart =
-        getWeekStart(
-            todayDate
-        );
-
+        getWeekStart(todayDate);
 
     const weekEnd =
-        getWeekEnd(
-            todayDate
-        );
+        getWeekEnd(todayDate);
 
 
     const todayMinutes =
-        getDayMinutes(
-            today
-        );
+        getDayMinutes(today);
 
 
     let weekMinutes = 0;
+
     let monthMinutes = 0;
 
 
-    state.entries.forEach(
-        entry => {
+    state.entries.forEach(entry => {
 
-            const date =
-                parseDateKey(
-                    entry.date
-                );
+        const date =
+            parseDateKey(entry.date);
 
-
-            const minutes =
-                getEffectiveMinutes(
-                    entry
-                );
+        const minutes =
+            getEffectiveMinutes(entry);
 
 
-            if (
-                date >= weekStart &&
-                date <= weekEnd
-            ) {
+        if (
+            date >= weekStart
+            &&
+            date <= weekEnd
+        ) {
 
-                weekMinutes += minutes;
-
-            }
-
-
-            if (
-                date.getMonth()
-                    === todayDate.getMonth() &&
-                date.getFullYear()
-                    === todayDate.getFullYear()
-            ) {
-
-                monthMinutes += minutes;
-
-            }
+            weekMinutes += minutes;
 
         }
-    );
+
+
+        if (
+            date.getMonth()
+                === todayDate.getMonth()
+            &&
+            date.getFullYear()
+                === todayDate.getFullYear()
+        ) {
+
+            monthMinutes += minutes;
+
+        }
+
+    });
 
 
     document
         .getElementById("todayHours")
         .textContent =
-            formatDuration(
-                todayMinutes
-            );
+            formatDuration(todayMinutes);
 
 
     document
         .getElementById("weekHours")
         .textContent =
-            formatDuration(
-                weekMinutes
-            );
+            formatDuration(weekMinutes);
 
 
     document
         .getElementById("monthHours")
         .textContent =
-            formatDuration(
-                monthMinutes
-            );
+            formatDuration(monthMinutes);
 
 
     document
@@ -2020,9 +1684,9 @@ function updateDashboardStats() {
 }
 
 
-/* =========================================================
+/* =========================
    RECENT ENTRIES
-========================================================= */
+========================= */
 
 function renderRecentEntries() {
 
@@ -2034,21 +1698,17 @@ function renderRecentEntries() {
 
     const entries =
         [...state.entries]
-            .sort(
-                (a, b) => {
+            .sort((a, b) => {
 
-                    return new Date(
-                        b.updatedAt ||
-                        b.createdAt
-                    )
-                    -
-                    new Date(
-                        a.updatedAt ||
-                        a.createdAt
-                    );
+                return new Date(
+                    b.updatedAt || b.createdAt
+                )
+                -
+                new Date(
+                    a.updatedAt || a.createdAt
+                );
 
-                }
-            )
+            })
             .slice(0, 5);
 
 
@@ -2068,57 +1728,51 @@ function renderRecentEntries() {
 
 
     container.innerHTML =
-        entries.map(
-            entry => {
+        entries.map(entry => {
 
-                const end =
-                    entry.end
-                        ? entry.end
-                        : "…";
+            const end =
+                entry.end
+                    ? entry.end
+                    : "…";
 
 
-                return `
-                    <div class="recent-entry">
+            return `
+                <div class="recent-entry">
 
-                        <div class="recent-entry-icon">
-                            ◷
-                        </div>
+                    <div class="recent-entry-icon">
+                        ◷
+                    </div>
 
-                        <div class="recent-entry-info">
+                    <div class="recent-entry-info">
 
-                            <strong>
-                                ${formatShortDate(
-                                    entry.date
-                                )}
-                            </strong>
+                        <strong>
+                            ${formatShortDate(entry.date)}
+                        </strong>
 
-                            <span>
-                                ${entry.start} → ${end}
-                            </span>
-
-                        </div>
-
-                        <div class="recent-entry-duration">
-                            ${formatDuration(
-                                getEffectiveMinutes(
-                                    entry
-                                )
-                            )}
-                        </div>
+                        <span>
+                            ${entry.start} → ${end}
+                        </span>
 
                     </div>
-                `;
 
-            }
-        )
+                    <div class="recent-entry-duration">
+                        ${formatDuration(
+                            getEffectiveMinutes(entry)
+                        )}
+                    </div>
+
+                </div>
+            `;
+
+        })
         .join("");
 
 }
 
 
-/* =========================================================
+/* =========================
    HISTORY FILTER
-========================================================= */
+========================= */
 
 function getFilteredEntries() {
 
@@ -2138,99 +1792,89 @@ function getFilteredEntries() {
         getTodayKey();
 
 
-    return state.entries.filter(
-        entry => {
+    return state.entries.filter(entry => {
 
-            const entryDate =
-                parseDateKey(
-                    entry.date
-                );
+        const entryDate =
+            parseDateKey(entry.date);
 
 
-            if (period === "all") {
-                return true;
-            }
-
-
-            if (period === "today") {
-                return entry.date === todayKey;
-            }
-
-
-            if (period === "week") {
-
-                return (
-                    entryDate >=
-                        getWeekStart(today) &&
-                    entryDate <=
-                        getWeekEnd(today)
-                );
-
-            }
-
-
-            if (period === "month") {
-
-                return (
-                    entryDate.getMonth()
-                        === today.getMonth() &&
-                    entryDate.getFullYear()
-                        === today.getFullYear()
-                );
-
-            }
-
-
-            if (period === "year") {
-
-                return (
-                    entryDate.getFullYear()
-                        === today.getFullYear()
-                );
-
-            }
-
-
-            if (period === "custom") {
-
-                const from =
-                    document
-                        .getElementById(
-                            "historyFromDate"
-                        )
-                        .value;
-
-
-                const to =
-                    document
-                        .getElementById(
-                            "historyToDate"
-                        )
-                        .value;
-
-
-                if (
-                    from &&
-                    entry.date < from
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    to &&
-                    entry.date > to
-                ) {
-                    return false;
-                }
-
-            }
-
-
+        if (period === "all") {
             return true;
+        }
+
+
+        if (period === "today") {
+            return entry.date === todayKey;
+        }
+
+
+        if (period === "week") {
+
+            return (
+                entryDate >= getWeekStart(today)
+                &&
+                entryDate <= getWeekEnd(today)
+            );
 
         }
-    );
+
+
+        if (period === "month") {
+
+            return (
+                entryDate.getMonth()
+                    === today.getMonth()
+                &&
+                entryDate.getFullYear()
+                    === today.getFullYear()
+            );
+
+        }
+
+
+        if (period === "year") {
+
+            return (
+                entryDate.getFullYear()
+                    === today.getFullYear()
+            );
+
+        }
+
+
+        if (period === "custom") {
+
+            const from =
+                document
+                    .getElementById(
+                        "historyFromDate"
+                    )
+                    .value;
+
+
+            const to =
+                document
+                    .getElementById(
+                        "historyToDate"
+                    )
+                    .value;
+
+
+            if (from && entry.date < from) {
+                return false;
+            }
+
+
+            if (to && entry.date > to) {
+                return false;
+            }
+
+        }
+
+
+        return true;
+
+    });
 
 }
 
@@ -2262,9 +1906,7 @@ function clearHistoryFilter() {
         .getElementById(
             "historyCustomDates"
         )
-        .classList.add(
-            "hidden"
-        );
+        .classList.add("hidden");
 
 
     renderHistory();
@@ -2272,9 +1914,9 @@ function clearHistoryFilter() {
 }
 
 
-/* =========================================================
+/* =========================
    HISTORY
-========================================================= */
+========================= */
 
 function renderHistory() {
 
@@ -2289,22 +1931,17 @@ function renderHistory() {
 
 
     const grouped =
-        groupEntriesByDate(
-            entries
-        );
+        groupEntriesByDate(entries);
 
 
     const dates =
         Object.keys(grouped)
-            .sort(
-                (a, b) =>
-                    b.localeCompare(a)
+            .sort((a, b) =>
+                b.localeCompare(a)
             );
 
 
-    updateHistorySummary(
-        grouped
-    );
+    updateHistorySummary(grouped);
 
 
     if (!dates.length) {
@@ -2323,124 +1960,111 @@ function renderHistory() {
 
 
     container.innerHTML =
-        dates.map(
-            date => {
+        dates.map(date => {
 
-                const dayEntries =
-                    grouped[date];
-
-
-                const dayMinutes =
-                    dayEntries.reduce(
-                        (
-                            total,
-                            entry
-                        ) =>
-                            total +
-                            getEffectiveMinutes(
-                                entry
-                            ),
-                        0
-                    );
+            const dayEntries =
+                grouped[date];
 
 
-                return `
-                    <article class="history-day">
+            const dayMinutes =
+                dayEntries.reduce(
+                    (total, entry) =>
+                        total
+                        +
+                        getEffectiveMinutes(entry),
+                    0
+                );
 
-                        <div class="history-day-header">
 
-                            <div class="history-day-title">
+            return `
+                <article class="history-day">
 
-                                <strong>
-                                    ${formatDate(date)}
-                                </strong>
+                    <div class="history-day-header">
 
-                                <span>
-                                    ${dayEntries.length} fichaje(s)
-                                </span>
+                        <div class="history-day-title">
 
-                            </div>
+                            <strong>
+                                ${formatDate(date)}
+                            </strong>
 
-                            <div class="history-day-total">
-                                ${formatDuration(
-                                    dayMinutes
-                                )}
-                            </div>
+                            <span>
+                                ${dayEntries.length} fichaje(s)
+                            </span>
 
                         </div>
 
-                        <div class="history-day-body">
-
-                            ${dayEntries
-                                .sort(
-                                    (a, b) =>
-                                        a.start.localeCompare(
-                                            b.start
-                                        )
-                                )
-                                .map(
-                                    entry => {
-
-                                        return `
-                                            <div class="history-entry">
-
-                                                <div class="history-entry-time">
-                                                    ${entry.start}
-                                                    <span>→</span>
-                                                    ${entry.end || "…"}
-
-                                                    ${
-                                                        !entry.end
-                                                            ? `<span>(${escapeHTML(t("active"))})</span>`
-                                                            : ""
-                                                    }
-                                                </div>
-
-                                                <div class="history-entry-duration">
-                                                    ${formatDuration(
-                                                        getEffectiveMinutes(
-                                                            entry
-                                                        )
-                                                    )}
-                                                </div>
-
-                                                <div class="history-entry-actions">
-
-                                                    <button
-                                                        class="small-action"
-                                                        type="button"
-                                                        onclick="openEditEntryById('${entry.id}')"
-                                                        title="${escapeHTML(t("edit"))}"
-                                                    >
-                                                        ✎
-                                                    </button>
-
-                                                    <button
-                                                        class="small-action delete"
-                                                        type="button"
-                                                        onclick="deleteEntry('${entry.id}')"
-                                                        title="${escapeHTML(t("delete"))}"
-                                                    >
-                                                        ×
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-                                        `;
-
-                                    }
-                                )
-                                .join("")
-                            }
-
+                        <div class="history-day-total">
+                            ${formatDuration(dayMinutes)}
                         </div>
 
-                    </article>
-                `;
+                    </div>
 
-            }
-        )
+                    <div class="history-day-body">
+
+                        ${dayEntries
+                            .sort((a, b) =>
+                                a.start.localeCompare(
+                                    b.start
+                                )
+                            )
+                            .map(entry => {
+
+                                return `
+                                    <div class="history-entry">
+
+                                        <div class="history-entry-time">
+                                            ${entry.start}
+                                            <span>→</span>
+                                            ${entry.end || "…"}
+
+                                            ${
+                                                !entry.end
+                                                    ? `<span>(${escapeHTML(t("active"))})</span>`
+                                                    : ""
+                                            }
+                                        </div>
+
+                                        <div class="history-entry-duration">
+                                            ${formatDuration(
+                                                getEffectiveMinutes(entry)
+                                            )}
+                                        </div>
+
+                                        <div class="history-entry-actions">
+
+                                            <button
+                                                class="small-action"
+                                                type="button"
+                                                onclick="openEditEntryById('${entry.id}')"
+                                                title="${escapeHTML(t("edit"))}"
+                                            >
+                                                ✎
+                                            </button>
+
+                                            <button
+                                                class="small-action delete"
+                                                type="button"
+                                                onclick="deleteEntry('${entry.id}')"
+                                                title="${escapeHTML(t("delete"))}"
+                                            >
+                                                ×
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+                                `;
+
+                            })
+                            .join("")
+                        }
+
+                    </div>
+
+                </article>
+            `;
+
+        })
         .join("");
 
 }
@@ -2449,31 +2073,21 @@ function renderHistory() {
 function updateHistorySummary(grouped) {
 
     const dates =
-        Object.keys(
-            grouped
-        );
+        Object.keys(grouped);
 
 
     const dayMinutes =
         dates
-            .map(
-                date =>
-                    grouped[date].reduce(
-                        (
-                            total,
-                            entry
-                        ) =>
-                            total +
-                            getEffectiveMinutes(
-                                entry
-                            ),
-                        0
-                    )
+            .map(date =>
+                grouped[date].reduce(
+                    (total, entry) =>
+                        total
+                        +
+                        getEffectiveMinutes(entry),
+                    0
+                )
             )
-            .filter(
-                minutes =>
-                    minutes > 0
-            );
+            .filter(minutes => minutes > 0);
 
 
     const daysWorked =
@@ -2482,10 +2096,7 @@ function updateHistorySummary(grouped) {
 
     const total =
         dayMinutes.reduce(
-            (
-                sum,
-                minutes
-            ) =>
+            (sum, minutes) =>
                 sum + minutes,
             0
         );
@@ -2510,9 +2121,7 @@ function updateHistorySummary(grouped) {
             "historyTotalHours"
         )
         .textContent =
-            formatDuration(
-                total
-            );
+            formatDuration(total);
 
 
     document
@@ -2520,9 +2129,7 @@ function updateHistorySummary(grouped) {
             "historyAverageHours"
         )
         .textContent =
-            formatDuration(
-                average
-            );
+            formatDuration(average);
 
 }
 
@@ -2530,16 +2137,12 @@ function updateHistorySummary(grouped) {
 function groupEntriesByDate(entries) {
 
     return entries.reduce(
-        (
-            groups,
-            entry
-        ) => {
+        (groups, entry) => {
 
             groups[entry.date] ||= [];
 
-            groups[entry.date].push(
-                entry
-            );
+            groups[entry.date]
+                .push(entry);
 
             return groups;
 
@@ -2550,9 +2153,9 @@ function groupEntriesByDate(entries) {
 }
 
 
-/* =========================================================
+/* =========================
    ADD ENTRY
-========================================================= */
+========================= */
 
 function openAddEntryModal() {
 
@@ -2563,8 +2166,7 @@ function openAddEntryModal() {
 
 
     const minAllowed =
-        getCreationDateKey()
-            > getYesterdayKey()
+        getCreationDateKey() > getYesterdayKey()
             ? getCreationDateKey()
             : getYesterdayKey();
 
@@ -2597,10 +2199,7 @@ function openAddEntryModal() {
 
     updateAddEntryInfo();
 
-
-    openModal(
-        "addEntryModal"
-    );
+    openModal("addEntryModal");
 
 }
 
@@ -2624,9 +2223,7 @@ function updateAddEntryInfo() {
 
     if (!date) {
 
-        box.classList.add(
-            "hidden"
-        );
+        box.classList.add("hidden");
 
         return;
 
@@ -2634,9 +2231,7 @@ function updateAddEntryInfo() {
 
 
     const entries =
-        getEntriesForDate(
-            date
-        );
+        getEntriesForDate(date);
 
 
     if (entries.length) {
@@ -2644,19 +2239,14 @@ function updateAddEntryInfo() {
         box.textContent =
             `${entries.length} fichaje(s) registrado(s) este día. El nuevo periodo se añadirá sin modificar los existentes.`;
 
-        box.classList.remove(
-            "hidden"
-        );
+        box.classList.remove("hidden");
 
-    }
-    else {
+    } else {
 
         box.textContent =
             "Este día no tiene fichajes. Introduce la hora de Entrada y Salida.";
 
-        box.classList.remove(
-            "hidden"
-        );
+        box.classList.remove("hidden");
 
     }
 
@@ -2692,11 +2282,7 @@ function addManualEntry(event) {
             .value;
 
 
-    if (
-        !isValidEntryDate(
-            date
-        )
-    ) {
+    if (!isValidEntryDate(date)) {
 
         showToast(
             t("invalidDate"),
@@ -2720,48 +2306,17 @@ function addManualEntry(event) {
     }
 
 
-    const startDate =
-        createDateTime(
-            date,
-            start
-        );
-
-
-    const endDate =
-        createDateTime(
-            date,
-            end
-        );
-
-
-    /*
-        Si salida es menor que entrada,
-        asumimos que termina al día siguiente.
-    */
-
-    if (endDate < startDate) {
-
-        endDate.setDate(
-            endDate.getDate() + 1
-        );
-
-    }
-
-
     const now =
         new Date().toISOString();
 
 
-    const id =
-        typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
-            ? crypto.randomUUID()
-            : String(Date.now());
-
-
     state.entries.push({
 
-        id,
+        id:
+            crypto.randomUUID
+                ? crypto.randomUUID()
+                : String(Date.now()),
+
 
         date,
 
@@ -2769,31 +2324,20 @@ function addManualEntry(event) {
 
         end,
 
-        startTimestamp:
-            startDate.toISOString(),
 
-        endTimestamp:
-            endDate.toISOString(),
+        adjustmentMinutes: 0,
 
-        adjustmentMinutes:
-            0,
 
-        createdAt:
-            now,
+        createdAt: now,
 
-        updatedAt:
-            now
+        updatedAt: now
 
     });
 
 
     saveState();
 
-
-    closeModal(
-        "addEntryModal"
-    );
-
+    closeModal("addEntryModal");
 
     refreshApplication();
 
@@ -2806,24 +2350,20 @@ function addManualEntry(event) {
 }
 
 
-/* =========================================================
+/* =========================
    EDIT ENTRIES
-========================================================= */
+========================= */
 
 function openEditEntryModal() {
 
     const dates =
-        [
-            ...new Set(
-                state.entries.map(
-                    entry =>
-                        entry.date
-                )
+        [...new Set(
+            state.entries.map(
+                entry => entry.date
             )
-        ]
-        .sort(
-            (a, b) =>
-                b.localeCompare(a)
+        )]
+        .sort((a, b) =>
+            b.localeCompare(a)
         );
 
 
@@ -2850,9 +2390,7 @@ function openEditEntryModal() {
                 </div>`;
 
 
-        openModal(
-            "editEntryModal"
-        );
+        openModal("editEntryModal");
 
         return;
 
@@ -2860,22 +2398,17 @@ function openEditEntryModal() {
 
 
     select.innerHTML =
-        dates.map(
-            date => `
-                <option value="${date}">
-                    ${formatDate(date)}
-                </option>
-            `
-        )
+        dates.map(date => `
+            <option value="${date}">
+                ${formatDate(date)}
+            </option>
+        `)
         .join("");
 
 
     renderEditEntries();
 
-
-    openModal(
-        "editEntryModal"
-    );
+    openModal("editEntryModal");
 
 }
 
@@ -2891,15 +2424,12 @@ function renderEditEntries() {
 
 
     const entries =
-        getEntriesForDate(
-            date
-        )
-        .sort(
-            (a, b) =>
+        getEntriesForDate(date)
+            .sort((a, b) =>
                 a.start.localeCompare(
                     b.start
                 )
-        );
+            );
 
 
     const container =
@@ -2922,70 +2452,71 @@ function renderEditEntries() {
 
 
     container.innerHTML =
-        entries.map(
-            entry => {
+        entries.map(entry => {
 
-                return `
-                    <div class="edit-entry-card">
+            return `
+                <div class="edit-entry-card">
 
-                        <form
-                            onsubmit="saveEditedEntry(event, '${entry.id}')"
+                    <form
+                        onsubmit="saveEditedEntry(event, '${entry.id}')"
+                    >
+
+                        <div class="form-group">
+
+                            <label>
+                                ${escapeHTML(t("clockIn"))}
+                            </label>
+
+                            <input
+                                id="edit-start-${entry.id}"
+                                class="form-control"
+                                type="time"
+                                value="${entry.start}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                ${escapeHTML(t("clockOut"))}
+                            </label>
+
+                            <input
+                                id="edit-end-${entry.id}"
+                                class="form-control"
+                                type="time"
+                                value="${entry.end || ""}"
+                                ${entry.end ? "required" : ""}
+                            >
+
+                        </div>
+
+
+                        <button
+                            class="primary-button"
+                            type="submit"
                         >
+                            ${escapeHTML(t("save"))}
+                        </button>
 
-                            <div class="form-group">
 
-                                <label>
-                                    ${escapeHTML(t("clockIn"))}
-                                </label>
+                        <button
+                            class="danger-button"
+                            type="button"
+                            onclick="deleteEntry('${entry.id}')"
+                        >
+                            ×
+                        </button>
 
-                                <input
-                                    id="edit-start-${entry.id}"
-                                    class="form-control"
-                                    type="time"
-                                    value="${entry.start}"
-                                    required
-                                >
+                    </form>
 
-                            </div>
+                </div>
+            `;
 
-                            <div class="form-group">
-
-                                <label>
-                                    ${escapeHTML(t("clockOut"))}
-                                </label>
-
-                                <input
-                                    id="edit-end-${entry.id}"
-                                    class="form-control"
-                                    type="time"
-                                    value="${entry.end || ""}"
-                                    ${entry.end ? "required" : ""}
-                                >
-
-                            </div>
-
-                            <button
-                                class="primary-button"
-                                type="submit"
-                            >
-                                ${escapeHTML(t("save"))}
-                            </button>
-
-                            <button
-                                class="danger-button"
-                                type="button"
-                                onclick="deleteEntry('${entry.id}')"
-                            >
-                                ×
-                            </button>
-
-                        </form>
-
-                    </div>
-                `;
-
-            }
-        )
+        })
         .join("");
 
 }
@@ -2995,8 +2526,7 @@ function openEditEntryById(id) {
 
     const entry =
         state.entries.find(
-            item =>
-                item.id === id
+            item => item.id === id
         );
 
 
@@ -3021,18 +2551,14 @@ function openEditEntryById(id) {
 }
 
 
-function saveEditedEntry(
-    event,
-    id
-) {
+function saveEditedEntry(event, id) {
 
     event.preventDefault();
 
 
     const entry =
         state.entries.find(
-            item =>
-                item.id === id
+            item => item.id === id
         );
 
 
@@ -3069,61 +2595,22 @@ function saveEditedEntry(
     }
 
 
-    entry.start =
-        start;
+    entry.start = start;
 
-
-    entry.end =
-        end || null;
+    entry.end = end || null;
 
 
     /*
-        Al editar manualmente eliminamos
-        los timestamps anteriores y los
-        reconstruimos con las nuevas horas.
+        Al editar manualmente las horas,
+        eliminamos los timestamps antiguos.
 
-        Esto evita errores de 24 horas.
+        Así el cálculo se basa exactamente
+        en las nuevas horas seleccionadas.
     */
 
-    const startDate =
-        createDateTime(
-            entry.date,
-            start
-        );
+    delete entry.startTimestamp;
 
-
-    entry.startTimestamp =
-        startDate.toISOString();
-
-
-    if (end) {
-
-        const endDate =
-            createDateTime(
-                entry.date,
-                end
-            );
-
-
-        if (endDate < startDate) {
-
-            endDate.setDate(
-                endDate.getDate() + 1
-            );
-
-        }
-
-
-        entry.endTimestamp =
-            endDate.toISOString();
-
-    }
-    else {
-
-        entry.endTimestamp =
-            null;
-
-    }
+    delete entry.endTimestamp;
 
 
     entry.updatedAt =
@@ -3131,7 +2618,6 @@ function saveEditedEntry(
 
 
     saveState();
-
 
     refreshApplication();
 
@@ -3146,41 +2632,30 @@ function saveEditedEntry(
 }
 
 
-/* =========================================================
+/* =========================
    DELETE
-========================================================= */
+========================= */
 
 function deleteEntry(id) {
 
-    if (
-        !confirm(
-            t("confirmDelete")
-        )
-    ) {
-
+    if (!confirm(t("confirmDelete"))) {
         return;
-
     }
 
 
     state.entries =
         state.entries.filter(
-            entry =>
-                entry.id !== id
+            entry => entry.id !== id
         );
 
 
     saveState();
 
-
     refreshApplication();
 
     renderEditEntries();
 
-
-    closeModal(
-        "adjustTimeModal"
-    );
+    closeModal("adjustTimeModal");
 
 
     showToast(
@@ -3191,24 +2666,20 @@ function deleteEntry(id) {
 }
 
 
-/* =========================================================
+/* =========================
    ADJUST TIME
-========================================================= */
+========================= */
 
 function openAdjustTimeModal() {
 
     const dates =
-        [
-            ...new Set(
-                state.entries.map(
-                    entry =>
-                        entry.date
-                )
+        [...new Set(
+            state.entries.map(
+                entry => entry.date
             )
-        ]
-        .sort(
-            (a, b) =>
-                b.localeCompare(a)
+        )]
+        .sort((a, b) =>
+            b.localeCompare(a)
         );
 
 
@@ -3222,13 +2693,11 @@ function openAdjustTimeModal() {
     select.innerHTML =
         `<option value="">${escapeHTML(t("selectDay"))}</option>`
         +
-        dates.map(
-            date => `
-                <option value="${date}">
-                    ${formatDate(date)}
-                </option>
-            `
-        )
+        dates.map(date => `
+            <option value="${date}">
+                ${formatDate(date)}
+            </option>
+        `)
         .join("");
 
 
@@ -3236,18 +2705,14 @@ function openAdjustTimeModal() {
         .getElementById(
             "adjustEntrySelector"
         )
-        .classList.add(
-            "hidden"
-        );
+        .classList.add("hidden");
 
 
     document
         .getElementById(
             "adjustCurrentInfo"
         )
-        .classList.add(
-            "hidden"
-        );
+        .classList.add("hidden");
 
 
     document
@@ -3264,9 +2729,7 @@ function openAdjustTimeModal() {
         .value = 0;
 
 
-    openModal(
-        "adjustTimeModal"
-    );
+    openModal("adjustTimeModal");
 
 }
 
@@ -3282,9 +2745,7 @@ function updateAdjustEntries() {
 
 
     const entries =
-        getEntriesForDate(
-            date
-        );
+        getEntriesForDate(date);
 
 
     const selector =
@@ -3305,37 +2766,29 @@ function updateAdjustEntries() {
         .getElementById(
             "adjustCurrentInfo"
         )
-        .classList.add(
-            "hidden"
-        );
+        .classList.add("hidden");
 
 
     if (!entries.length) {
 
-        selector.classList.add(
-            "hidden"
-        );
+        selector.classList.add("hidden");
 
         return;
 
     }
 
 
-    selector.classList.remove(
-        "hidden"
-    );
+    selector.classList.remove("hidden");
 
 
     select.innerHTML =
         `<option value="">${escapeHTML(t("selectEntry"))}</option>`
         +
-        entries.map(
-            entry => `
-                <option value="${entry.id}">
-                    ${entry.start} → ${entry.end || "…"}
-                </option>
-            `
-        )
+        entries.map(entry => `
+            <option value="${entry.id}">
+                ${entry.start} → ${entry.end || "…"}
+            </option>
+        `)
         .join("");
 
 }
@@ -3353,8 +2806,7 @@ function updateAdjustInfo() {
 
     const entry =
         state.entries.find(
-            item =>
-                item.id === id
+            item => item.id === id
         );
 
 
@@ -3367,18 +2819,14 @@ function updateAdjustInfo() {
 
     if (!entry) {
 
-        info.classList.add(
-            "hidden"
-        );
+        info.classList.add("hidden");
 
         return;
 
     }
 
 
-    info.classList.remove(
-        "hidden"
-    );
+    info.classList.remove("hidden");
 
 
     document
@@ -3387,9 +2835,7 @@ function updateAdjustInfo() {
         )
         .textContent =
             formatDuration(
-                getGrossMinutes(
-                    entry
-                )
+                getGrossMinutes(entry)
             );
 
 
@@ -3400,8 +2846,7 @@ function updateAdjustInfo() {
         .textContent =
             formatAdjustment(
                 Number(
-                    entry.adjustmentMinutes ||
-                    0
+                    entry.adjustmentMinutes || 0
                 )
             );
 
@@ -3412,9 +2857,7 @@ function updateAdjustInfo() {
         )
         .textContent =
             formatDuration(
-                getEffectiveMinutes(
-                    entry
-                )
+                getEffectiveMinutes(entry)
             );
 
 }
@@ -3435,8 +2878,7 @@ function saveAdjustment(event) {
 
     const entry =
         state.entries.find(
-            item =>
-                item.id === id
+            item => item.id === id
         );
 
 
@@ -3483,10 +2925,7 @@ function saveAdjustment(event) {
 
 
     const amount =
-        Math.floor(
-            hours * 60 +
-            minutes
-        );
+        Math.floor(hours * 60 + minutes);
 
 
     if (!amount) {
@@ -3502,21 +2941,17 @@ function saveAdjustment(event) {
 
     const current =
         Number(
-            entry.adjustmentMinutes ||
-            0
+            entry.adjustmentMinutes || 0
         );
 
 
     const newAdjustment =
-        current +
-        signedAmount;
+        current + signedAmount;
 
 
     entry.adjustmentMinutes =
         Math.max(
-            -getGrossMinutes(
-                entry
-            ),
+            -getGrossMinutes(entry),
             newAdjustment
         );
 
@@ -3527,11 +2962,7 @@ function saveAdjustment(event) {
 
     saveState();
 
-
-    closeModal(
-        "adjustTimeModal"
-    );
-
+    closeModal("adjustTimeModal");
 
     refreshApplication();
 
@@ -3544,9 +2975,9 @@ function saveAdjustment(event) {
 }
 
 
-/* =========================================================
+/* =========================
    STATISTICS
-========================================================= */
+========================= */
 
 function getDailyData() {
 
@@ -3559,33 +2990,26 @@ function getDailyData() {
     return Object
         .keys(grouped)
         .sort()
-        .map(
-            date => {
+        .map(date => {
 
-                const minutes =
-                    grouped[date].reduce(
-                        (
-                            total,
-                            entry
-                        ) =>
-                            total +
-                            getEffectiveMinutes(
-                                entry
-                            ),
-                        0
-                    );
+            const minutes =
+                grouped[date].reduce(
+                    (total, entry) =>
+                        total
+                        +
+                        getEffectiveMinutes(entry),
+                    0
+                );
 
 
-                return {
-                    date,
-                    minutes
-                };
+            return {
+                date,
+                minutes
+            };
 
-            }
-        )
+        })
         .filter(
-            item =>
-                item.minutes > 0
+            item => item.minutes > 0
         );
 
 }
@@ -3599,12 +3023,8 @@ function renderStatistics() {
 
     const total =
         dailyData.reduce(
-            (
-                sum,
-                item
-            ) =>
-                sum +
-                item.minutes,
+            (sum, item) =>
+                sum + item.minutes,
             0
         );
 
@@ -3624,9 +3044,7 @@ function renderStatistics() {
             "statisticsTotalHours"
         )
         .textContent =
-            formatDuration(
-                total
-            );
+            formatDuration(total);
 
 
     document
@@ -3642,9 +3060,7 @@ function renderStatistics() {
             "statisticsDailyAverage"
         )
         .textContent =
-            formatDuration(
-                average
-            );
+            formatDuration(average);
 
 
     if (dailyData.length) {
@@ -3653,8 +3069,7 @@ function renderStatistics() {
             [...dailyData]
                 .sort(
                     (a, b) =>
-                        b.minutes -
-                        a.minutes
+                        b.minutes - a.minutes
                 )[0];
 
 
@@ -3662,8 +3077,7 @@ function renderStatistics() {
             [...dailyData]
                 .sort(
                     (a, b) =>
-                        a.minutes -
-                        b.minutes
+                        a.minutes - b.minutes
                 )[0];
 
 
@@ -3672,9 +3086,7 @@ function renderStatistics() {
                 "statisticsBestDay"
             )
             .textContent =
-            formatShortDate(
-                best.date
-            );
+                formatShortDate(best.date);
 
 
         document
@@ -3682,9 +3094,7 @@ function renderStatistics() {
                 "statisticsBestDayHours"
             )
             .textContent =
-            formatDuration(
-                best.minutes
-            );
+                formatDuration(best.minutes);
 
 
         document
@@ -3692,9 +3102,7 @@ function renderStatistics() {
                 "statisticsWorstDay"
             )
             .textContent =
-            formatShortDate(
-                worst.date
-            );
+                formatShortDate(worst.date);
 
 
         document
@@ -3702,12 +3110,9 @@ function renderStatistics() {
                 "statisticsWorstDayHours"
             )
             .textContent =
-            formatDuration(
-                worst.minutes
-            );
+                formatDuration(worst.minutes);
 
-    }
-    else {
+    } else {
 
         [
             "statisticsBestDay",
@@ -3715,28 +3120,20 @@ function renderStatistics() {
             "statisticsWorstDay",
             "statisticsWorstDayHours"
         ]
-        .forEach(
-            id => {
+        .forEach(id => {
 
-                document
-                    .getElementById(id)
-                    .textContent =
-                    "—";
+            document
+                .getElementById(id)
+                .textContent = "—";
 
-            }
-        );
+        });
 
     }
 
 
-    renderChart(
-        dailyData
-    );
+    renderChart(dailyData);
 
-
-    renderBreakdown(
-        dailyData
-    );
+    renderBreakdown(dailyData);
 
 }
 
@@ -3770,28 +3167,23 @@ function renderChart(data) {
         const start =
             getWeekStart(now);
 
-
         const end =
             getWeekEnd(now);
 
 
         filtered =
-            filtered.filter(
-                item => {
+            filtered.filter(item => {
 
-                    const date =
-                        parseDateKey(
-                            item.date
-                        );
+                const date =
+                    parseDateKey(item.date);
 
+                return (
+                    date >= start
+                    &&
+                    date <= end
+                );
 
-                    return (
-                        date >= start &&
-                        date <= end
-                    );
-
-                }
-            );
+            });
 
     }
 
@@ -3799,24 +3191,20 @@ function renderChart(data) {
     if (period === "month") {
 
         filtered =
-            filtered.filter(
-                item => {
+            filtered.filter(item => {
 
-                    const date =
-                        parseDateKey(
-                            item.date
-                        );
+                const date =
+                    parseDateKey(item.date);
 
+                return (
+                    date.getMonth()
+                        === now.getMonth()
+                    &&
+                    date.getFullYear()
+                        === now.getFullYear()
+                );
 
-                    return (
-                        date.getMonth()
-                            === now.getMonth() &&
-                        date.getFullYear()
-                            === now.getFullYear()
-                    );
-
-                }
-            );
+            });
 
     }
 
@@ -3836,52 +3224,43 @@ function renderChart(data) {
     const max =
         Math.max(
             ...filtered.map(
-                item =>
-                    item.minutes
+                item => item.minutes
             )
         );
 
 
     container.innerHTML =
-        filtered.map(
-            item => {
+        filtered.map(item => {
 
-                const percentage =
-                    max
-                        ? Math.max(
-                            3,
-                            item.minutes /
-                            max *
-                            100
-                        )
-                        : 0;
+            const percentage =
+                max
+                    ? Math.max(
+                        3,
+                        item.minutes / max * 100
+                    )
+                    : 0;
 
 
-                return `
-                    <div class="chart-bar-wrapper">
+            return `
+                <div class="chart-bar-wrapper">
 
-                        <span class="chart-value">
-                            ${formatDuration(
-                                item.minutes
-                            )}
-                        </span>
+                    <span class="chart-value">
+                        ${formatDuration(item.minutes)}
+                    </span>
 
-                        <div
-                            class="chart-bar"
-                            style="height:${percentage}%"
-                        ></div>
+                    <div
+                        class="chart-bar"
+                        style="height:${percentage}%"
+                    ></div>
 
-                        <span class="chart-label">
-                            ${formatShortDate(
-                                item.date
-                            )}
-                        </span>
+                    <span class="chart-label">
+                        ${formatShortDate(item.date)}
+                    </span>
 
-                    </div>
-                `;
+                </div>
+            `;
 
-            }
-        )
+        })
         .join("");
 
 }
@@ -3910,65 +3289,53 @@ function renderBreakdown(data) {
     const max =
         Math.max(
             ...data.map(
-                item =>
-                    item.minutes
+                item => item.minutes
             )
         );
 
 
     container.innerHTML =
         [...data]
-            .sort(
-                (a, b) =>
-                    b.date.localeCompare(
-                        a.date
-                    )
+            .sort((a, b) =>
+                b.date.localeCompare(a.date)
             )
-            .map(
-                item => {
+            .map(item => {
 
-                    const percentage =
-                        max
-                            ? item.minutes /
-                              max *
-                              100
-                            : 0;
+                const percentage =
+                    max
+                        ? item.minutes / max * 100
+                        : 0;
 
 
-                    return `
-                        <div class="breakdown-row">
+                return `
+                    <div class="breakdown-row">
 
-                            <span>
-                                ${formatShortDate(
-                                    item.date
-                                )}
-                            </span>
+                        <span>
+                            ${formatShortDate(item.date)}
+                        </span>
 
-                            <div class="breakdown-progress">
-                                <span
-                                    style="width:${percentage}%"
-                                ></span>
-                            </div>
-
-                            <strong class="breakdown-hours">
-                                ${formatDuration(
-                                    item.minutes
-                                )}
-                            </strong>
-
+                        <div class="breakdown-progress">
+                            <span
+                                style="width:${percentage}%"
+                            ></span>
                         </div>
-                    `;
 
-                }
-            )
+                        <strong class="breakdown-hours">
+                            ${formatDuration(item.minutes)}
+                        </strong>
+
+                    </div>
+                `;
+
+            })
             .join("");
 
 }
 
 
-/* =========================================================
+/* =========================
    USERNAME
-========================================================= */
+========================= */
 
 function saveUsername(event) {
 
@@ -3997,11 +3364,7 @@ function saveUsername(event) {
 
     saveState();
 
-
-    closeModal(
-        "usernameModal"
-    );
-
+    closeModal("usernameModal");
 
     refreshApplication();
 
@@ -4014,9 +3377,9 @@ function saveUsername(event) {
 }
 
 
-/* =========================================================
+/* =========================
    SETTINGS
-========================================================= */
+========================= */
 
 function applySettings() {
 
@@ -4049,8 +3412,7 @@ function applySettings() {
             "languageToggleBtn"
         )
         .textContent =
-            state.settings.language
-                .toUpperCase();
+            state.settings.language.toUpperCase();
 
 
     document
@@ -4093,9 +3455,9 @@ function toggleLanguage() {
 }
 
 
-/* =========================================================
+/* =========================
    TRANSLATION
-========================================================= */
+========================= */
 
 function t(key) {
 
@@ -4115,47 +3477,42 @@ function t(key) {
 function translatePage() {
 
     document
-        .querySelectorAll(
-            "[data-i18n]"
-        )
-        .forEach(
-            element => {
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
 
-                const key =
-                    element.dataset.i18n;
+            const key =
+                element.dataset.i18n;
 
 
-                if (
-                    translations[
-                        state.settings.language
-                    ][key]
-                ) {
+            if (
+                translations[
+                    state.settings.language
+                ][key]
+            ) {
 
-                    element.textContent =
-                        t(key);
-
-                }
+                element.textContent =
+                    t(key);
 
             }
-        );
+
+        });
 
 }
 
 
-/* =========================================================
+/* =========================
    PROFILE
-========================================================= */
+========================= */
 
 function updateProfile() {
 
     const username =
-        state.settings.username ||
-        "Usuario";
+        state.settings.username
+        || "Usuario";
 
 
     const initial =
-        username
-            .charAt(0)
+        username.charAt(0)
             .toUpperCase();
 
 
@@ -4201,17 +3558,15 @@ function updateProfile() {
 }
 
 
-/* =========================================================
+/* =========================
    MODALS
-========================================================= */
+========================= */
 
 function openModal(id) {
 
     document
         .getElementById(id)
-        .classList.add(
-            "open"
-        );
+        .classList.add("open");
 
 }
 
@@ -4220,16 +3575,14 @@ function closeModal(id) {
 
     document
         .getElementById(id)
-        .classList.remove(
-            "open"
-        );
+        .classList.remove("open");
 
 }
 
 
-/* =========================================================
+/* =========================
    EXPORT
-========================================================= */
+========================= */
 
 function exportData() {
 
@@ -4257,27 +3610,20 @@ function exportData() {
         new Blob(
             [data],
             {
-                type:
-                    "application/json"
+                type: "application/json"
             }
         );
 
 
     const url =
-        URL.createObjectURL(
-            blob
-        );
+        URL.createObjectURL(blob);
 
 
     const link =
-        document.createElement(
-            "a"
-        );
+        document.createElement("a");
 
 
-    link.href =
-        url;
-
+    link.href = url;
 
     link.download =
         `worktracker-${getTodayKey()}.json`;
@@ -4285,17 +3631,14 @@ function exportData() {
 
     link.click();
 
-
-    URL.revokeObjectURL(
-        url
-    );
+    URL.revokeObjectURL(url);
 
 }
 
 
-/* =========================================================
+/* =========================
    IMPORT
-========================================================= */
+========================= */
 
 function importData(event) {
 
@@ -4312,132 +3655,75 @@ function importData(event) {
         new FileReader();
 
 
-    reader.onload =
-        loadEvent => {
+    reader.onload = loadEvent => {
 
-            try {
+        try {
 
-                const imported =
-                    JSON.parse(
-                        loadEvent
-                            .target
-                            .result
-                    );
-
-
-                if (
-                    !imported ||
-                    !Array.isArray(
-                        imported.entries
-                    )
-                ) {
-
-                    throw new Error();
-
-                }
-
-
-                state =
-                    imported;
-
-
-                state.settings ||= {};
-
-
-                state.settings.language ||=
-                    "es";
-
-
-                state.settings.theme ||=
-                    "dark";
-
-
-                state.settings.createdAt ||=
-                    new Date().toISOString();
-
-
-                /*
-                    Normalizamos fichajes
-                    importados antiguos.
-
-                    No modificamos sus horas,
-                    pero garantizamos que tengan
-                    adjustmentMinutes.
-                */
-
-                state.entries =
-                    state.entries.map(
-                        entry => {
-
-                            entry.adjustmentMinutes =
-                                Number(
-                                    entry.adjustmentMinutes ||
-                                    0
-                                );
-
-
-                            return entry;
-
-                        }
-                    );
-
-
-                saveState();
-
-
-                applySettings();
-
-                refreshApplication();
-
-
-                showToast(
-                    t("importSuccess"),
-                    "success"
-                );
-
-            }
-            catch (error) {
-
-                console.error(
-                    error
+            const imported =
+                JSON.parse(
+                    loadEvent.target.result
                 );
 
 
-                showToast(
-                    t("importError"),
-                    "error"
-                );
-
+            if (
+                !imported
+                ||
+                !Array.isArray(
+                    imported.entries
+                )
+            ) {
+                throw new Error();
             }
 
-        };
+
+            state = imported;
+
+            state.settings ||= {};
+
+            state.settings.language ||= "es";
+            state.settings.theme ||= "dark";
+            state.settings.createdAt ||= new Date().toISOString();
 
 
-    reader.readAsText(
-        file
-    );
+            saveState();
+
+            applySettings();
+
+            refreshApplication();
 
 
-    event.target.value =
-        "";
+            showToast(
+                t("importSuccess"),
+                "success"
+            );
+
+        } catch (error) {
+
+            showToast(
+                t("importError"),
+                "error"
+            );
+
+        }
+
+    };
+
+
+    reader.readAsText(file);
+
+    event.target.value = "";
 
 }
 
 
-/* =========================================================
+/* =========================
    RESET
-========================================================= */
+========================= */
 
 function resetApplication() {
 
-    if (
-        !confirm(
-            t("confirmReset")
-        )
-    ) {
-
+    if (!confirm(t("confirmReset"))) {
         return;
-
     }
 
 
@@ -4452,23 +3738,18 @@ function resetApplication() {
 
     saveState();
 
-
     applySettings();
-
 
     refreshApplication();
 
-
-    openModal(
-        "usernameModal"
-    );
+    openModal("usernameModal");
 
 }
 
 
-/* =========================================================
+/* =========================
    TOAST
-========================================================= */
+========================= */
 
 function showToast(
     message,
@@ -4482,9 +3763,7 @@ function showToast(
 
 
     const toast =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
 
     toast.className =
@@ -4500,21 +3779,18 @@ function showToast(
     );
 
 
-    setTimeout(
-        () => {
+    setTimeout(() => {
 
-            toast.remove();
+        toast.remove();
 
-        },
-        3500
-    );
+    }, 3500);
 
 }
 
 
-/* =========================================================
+/* =========================
    REFRESH
-========================================================= */
+========================= */
 
 function refreshApplication() {
 
@@ -4541,21 +3817,17 @@ function refreshApplication() {
 }
 
 
-/* =========================================================
+/* =========================
    SECURITY
-========================================================= */
+========================= */
 
 function escapeHTML(value) {
 
     const div =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     div.textContent =
         String(value);
-
 
     return div.innerHTML;
 
